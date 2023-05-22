@@ -1,7 +1,10 @@
 package com.example.meal2.mealitem;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+
 
 import java.util.List;
 import java.util.Optional;
@@ -17,8 +20,8 @@ public class MealItemServiceImpl implements MealItemService{
     }
 
     @Override
-    public List<MealItem> getAllMealItems() {
-        return mealItemRepository.findAll();
+    public List<MealItem> getAllMealItems(String search, Pageable pageable) {
+        return mealItemRepository.getAllMealItems(search, pageable);
     }
 
     @Override
@@ -39,6 +42,11 @@ public class MealItemServiceImpl implements MealItemService{
     @Override
     public void deleteMealItemById(Long id) {
         mealItemRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return mealItemRepository.existsById(id);
     }
 
 

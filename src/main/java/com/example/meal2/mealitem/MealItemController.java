@@ -1,6 +1,12 @@
 package com.example.meal2.mealitem;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,32 +24,51 @@ public class MealItemController {
     }
 
     @GetMapping("/meals")
-    public List<MealItem> getAllMealItems(){
-        return mealItemService.getAllMealItems();
+    public ResponseEntity<List<MealItem>> getAllMealItems(
+            @RequestParam Optional<String> q,
+            @RequestParam Optional<Integer> p,
+            @RequestParam Optional<Integer> s
+    ){
+        Integer DEFAULT_SIZE = 32;
+        Integer MAX_SIZE = 50;
+
+        String search = q.orElse("");
+        Integer page = p.orElse(0);
+        Integer size = s.orElse(DEFAULT_SIZE);
+        if (size > MAX_SIZE) size = MAX_SIZE;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending().and(Sort.by("time").descending()));
+        return new ResponseEntity<>(mealItemService.getAllMealItems(search, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/meals/{id}")
-    public MealItem getMealItem(@PathVariable("id") Long id){
+    public ResponseEntity<MealItem> getMealItem(@PathVariable("id") Long id){
         Optional<MealItem> mi = mealItemService.getMealItemById(id);
-        return mi.orElse(null);
+        return new ResponseEntity<>(mi.orElse(null), HttpStatus.OK);
     }
 
     @PostMapping("/meals")
-    public void addMealItem(@RequestBody MealItem mealItem){
+    public ResponseEntity<?> addMealItem(@RequestBody MealItem mealItem){
         mealItemService.saveMealItem(mealItem);
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
     @PutMapping("/meals/{id}")
-    public void updateMealItem(
+    public ResponseEntity<?> updateMealItem(
             @PathVariable("id") Long id,
             @RequestBody MealItem mealItem){
-        mealItem.setId(id);
-        mealItemService.saveMealItem(mealItem);
+        if(mealItemService.existsById(id)){
+            mealItem.setId(id);
+            mealItemService.saveMealItem(mealItem);
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("id doesn't exist", HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/meals/{id}")
-    public void deleteMealItem(@PathVariable("id") Long id){
+    public ResponseEntity<?> deleteMealItem(@PathVariable("id") Long id){
         mealItemService.deleteMealItemById(id);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
 }
