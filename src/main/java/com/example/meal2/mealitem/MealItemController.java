@@ -1,5 +1,7 @@
 package com.example.meal2.mealitem;
 
+import com.example.meal2.exception.ResourceNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -43,11 +45,14 @@ public class MealItemController {
     @GetMapping("/meals/{id}")
     public ResponseEntity<MealItem> getMealItem(@PathVariable("id") Long id){
         Optional<MealItem> mi = mealItemService.getMealItemById(id);
-        return new ResponseEntity<>(mi.orElse(null), HttpStatus.OK);
+        if(mi.isPresent()){
+            return new ResponseEntity<>(mi.get(), HttpStatus.OK);
+        }
+        throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
     @PostMapping("/meals")
-    public ResponseEntity<?> addMealItem(@RequestBody MealItem mealItem){
+    public ResponseEntity<?> addMealItem(@RequestBody @Valid MealItem mealItem){
         mealItemService.saveMealItem(mealItem);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -55,13 +60,13 @@ public class MealItemController {
     @PutMapping("/meals/{id}")
     public ResponseEntity<?> updateMealItem(
             @PathVariable("id") Long id,
-            @RequestBody MealItem mealItem){
+            @RequestBody @Valid MealItem mealItem){
         if(mealItemService.existsById(id)){
             mealItem.setId(id);
             mealItemService.saveMealItem(mealItem);
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
-        return new ResponseEntity<>("id doesn't exist", HttpStatus.BAD_REQUEST);
+        throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
     @DeleteMapping("/meals/{id}")
