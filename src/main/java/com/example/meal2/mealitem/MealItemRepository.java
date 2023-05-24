@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -32,13 +33,16 @@ public interface MealItemRepository extends JpaRepository<MealItem, Long> {
         WHERE
             (mi.meal LIKE CONCAT('%', :s, '%') OR mi.note LIKE CONCAT('%', :s, '%')) AND
             (:#{#ms?.name()} IS NULL OR :#{#ms?.name()} = mi.meal_size) AND
-            (:sd <= mi.meal_date AND :ed >= mi.meal_date)
+            (:sd <= mi.meal_date AND :ed >= mi.meal_date) AND
+            (:st <= mi.meal_time AND :et >= mi.meal_time)
     """, nativeQuery=true)
     List<MealItem> getAllMealItems(
             @Param("s") String search,
             @Param("ms") MealItem.MealSize mealSize,
             @Param("sd") LocalDate startDate,
             @Param("ed") LocalDate endDate,
+            @Param("st") LocalTime startTime,
+            @Param("et") LocalTime endTime,
             Pageable pageable
     );
 

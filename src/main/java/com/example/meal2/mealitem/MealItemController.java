@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,9 @@ public class MealItemController {
             @RequestParam Optional<Integer> s,
             @RequestParam Optional<MealItem.MealSize> m,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> sd,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> ed
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> ed,
+            @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> st,
+            @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> et
     ){
         String search = q.orElse("");
         Integer page = p.orElse(0);
@@ -36,8 +39,10 @@ public class MealItemController {
         MealItem.MealSize type = m.orElse(null);
         LocalDate startDate = sd.orElse(null);
         LocalDate endDate = ed.orElse(null);
+        LocalTime startTime = st.orElse(null);
+        LocalTime endTime = et.orElse(null);
 
-        return new ResponseEntity<>(mealItemService.getAllMealItems(search, page, size, type, startDate, endDate), HttpStatus.OK);
+        return new ResponseEntity<>(mealItemService.getAllMealItems(search, page, size, type, startDate, endDate, startTime, endTime), HttpStatus.OK);
     }
 
     @GetMapping("/meals/{id}")
