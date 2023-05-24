@@ -1,14 +1,12 @@
 package com.example.meal2.mealitem;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,18 +25,19 @@ public class MealItemController {
     public ResponseEntity<List<MealItem>> getAllMealItems(
             @RequestParam Optional<String> q,
             @RequestParam Optional<Integer> p,
-            @RequestParam Optional<Integer> s
+            @RequestParam Optional<Integer> s,
+            @RequestParam Optional<MealItem.MealSize> m,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> sd,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> ed
     ){
-        Integer DEFAULT_SIZE = 32;
-        Integer MAX_SIZE = 50;
-
         String search = q.orElse("");
         Integer page = p.orElse(0);
-        Integer size = s.orElse(DEFAULT_SIZE);
-        if (size > MAX_SIZE) size = MAX_SIZE;
+        Integer size = s.orElse(0);
+        MealItem.MealSize type = m.orElse(null);
+        LocalDate startDate = sd.orElse(null);
+        LocalDate endDate = ed.orElse(null);
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending().and(Sort.by("time").descending()));
-        return new ResponseEntity<>(mealItemService.getAllMealItems(search, pageable), HttpStatus.OK);
+        return new ResponseEntity<>(mealItemService.getAllMealItems(search, page, size, type, startDate, endDate), HttpStatus.OK);
     }
 
     @GetMapping("/meals/{id}")
