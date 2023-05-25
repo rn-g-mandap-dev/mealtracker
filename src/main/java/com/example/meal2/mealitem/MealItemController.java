@@ -56,13 +56,13 @@ public class MealItemController {
         throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
-    @PostMapping("/meals")
+    @PostMapping(value="/meals", consumes="application/json")
     public ResponseEntity<?> addMealItem(@RequestBody @Valid MealItem mealItem){
         mealItemService.saveMealItem(mealItem);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
-    @PutMapping("/meals/{id}")
+    @PutMapping(value="/meals/{id}", consumes="application/json")
     public ResponseEntity<?> updateMealItem(
             @PathVariable("id") Long id,
             @RequestBody @Valid MealItem mealItem){
