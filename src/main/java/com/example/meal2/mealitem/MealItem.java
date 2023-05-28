@@ -1,6 +1,7 @@
 package com.example.meal2.mealitem;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +26,7 @@ public class MealItem {
     @Column(name="id")
     private Long id;
 
+    @Schema(example="meal description")
     @NotBlank(message="meal => must not be blank")
     @Size(max=512, message="meal => must not exceed 512 characters")
     @Column(name="meal", nullable=false)
@@ -35,6 +37,7 @@ public class MealItem {
     @Column(name="meal_date", columnDefinition="DATE", nullable=false)
     private LocalDate date;
 
+    @Schema(type="string", pattern="hh:mm:ss", format="time", example="12:00:00")
     @NotNull(message="time => must not be blank (hh:mm:ss)")
     @DateTimeFormat(pattern="hh:mm:ss")
     @Column(name="meal_time", columnDefinition="TIME", nullable=false)
@@ -46,6 +49,7 @@ public class MealItem {
     @Column(name="meal_size", columnDefinition="ENUM('light','medium','heavy')", nullable=false)
     private MealSize mealSize;
 
+    @Schema(example="meal note")
     @Size(max=256, message="note => must not exceed 256 characters")
     @Column(name="note", nullable=true)
     private String note;

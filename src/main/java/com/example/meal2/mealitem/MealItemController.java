@@ -1,6 +1,14 @@
 package com.example.meal2.mealitem;
 
 import com.example.meal2.exception.ResourceNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -8,11 +16,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(
+    name="MealItem controller",
+    description = "provides api from MealItem"
+)
 @RestController
 @RequestMapping("/api/v1")
 public class MealItemController {
@@ -24,15 +37,44 @@ public class MealItemController {
         this.mealItemService = mealItemService;
     }
 
+    @Operation(
+        summary="get all MealItem objects",
+        description="get all MealItem objects that match parameters"
+    )
+    @ApiResponses(value={
+        @ApiResponse(
+            responseCode="200",
+            description="list of MealItem objects",
+            content={@Content(
+                mediaType="application/json",
+                array=@ArraySchema(schema=@Schema(implementation=MealItem.class))
+            )}
+        )
+    })
     @GetMapping("/meals")
     public ResponseEntity<List<MealItem>> getAllMealItems(
+            @Parameter(description="search (meal descriptions and notes)", schema=@Schema(type="string"))
             @RequestParam Optional<String> q,
+
+            @Parameter(description="page (starts at 0)")
             @RequestParam Optional<Integer> p,
+
+            @Parameter(description="size (default: 32, max: 50)")
             @RequestParam Optional<Integer> s,
+
+            @Parameter(description="meal size")
             @RequestParam Optional<MealItem.MealSize> m,
+
+            @Parameter(description="start date (yyyy-mm-dd)")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> sd,
+
+            @Parameter(description="end date (yyyy-mm-dd)")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> ed,
+
+            @Parameter(description="start time (hh:mm:ss)", schema=@Schema(type="string", format="time"))
             @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> st,
+
+            @Parameter(description="end time (hh:mm:ss)", schema=@Schema(type="string", format="time"))
             @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> et
     ){
         String search = q.orElse("");
@@ -47,8 +89,25 @@ public class MealItemController {
         return new ResponseEntity<>(mealItemService.getAllMealItems(search, page, size, type, startDate, endDate, startTime, endTime), HttpStatus.OK);
     }
 
+    @Operation(
+            summary="get MealItem object",
+            description="get MealItem object that matches id"
+    )
+    @ApiResponses(value={
+            @ApiResponse(
+                    responseCode="200",
+                    description="MealItem object",
+                    content={@Content(
+                            mediaType="application/json",
+                            schema=@Schema(implementation=MealItem.class)
+                    )}
+            )
+    })
     @GetMapping("/meals/{id}")
-    public ResponseEntity<MealItem> getMealItem(@PathVariable("id") Long id){
+    public ResponseEntity<MealItem> getMealItem(
+            @Parameter(description="MealItem id")
+            @PathVariable("id") Long id
+    ){
         Optional<MealItem> mi = mealItemService.getMealItemById(id);
         if(mi.isPresent()){
             return new ResponseEntity<>(mi.get(), HttpStatus.OK);
@@ -56,14 +115,23 @@ public class MealItemController {
         throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
+    @Operation(
+            summary="add new MealItem object",
+            description="add new MealItem object"
+    )
     @PostMapping(value="/meals", consumes="application/json")
     public ResponseEntity<?> addMealItem(@RequestBody @Valid MealItem mealItem){
         mealItemService.saveMealItem(mealItem);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
+    @Operation(
+            summary="update MealItem object",
+            description="update MealItem object that matches id"
+    )
     @PutMapping(value="/meals/{id}", consumes="application/json")
     public ResponseEntity<?> updateMealItem(
+            @Parameter(description="MealItem id")
             @PathVariable("id") Long id,
             @RequestBody @Valid MealItem mealItem){
         if(mealItemService.existsById(id)){
@@ -74,8 +142,14 @@ public class MealItemController {
         throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
+    @Operation(
+            summary="delete MealItem object",
+            description="delete MealItem object that matches id"
+    )
     @DeleteMapping("/meals/{id}")
-    public ResponseEntity<?> deleteMealItem(@PathVariable("id") Long id){
+    public ResponseEntity<?> deleteMealItem(
+            @Parameter(description="MealItem id")
+            @PathVariable("id") Long id){
         mealItemService.deleteMealItemById(id);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
