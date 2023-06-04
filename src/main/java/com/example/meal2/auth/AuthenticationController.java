@@ -1,6 +1,7 @@
 package com.example.meal2.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,17 +19,18 @@ public class AuthenticationController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    @PostMapping("/signup")
+    public ResponseEntity<?> signin(
             @RequestBody RegisterRequest request
     ){
-        return ResponseEntity.ok(authService.register(request));
+        authService.register(request);
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(
+    @PostMapping("/signin")
+    public ResponseEntity<AuthenticationResponse> signup(
             @RequestBody AuthenticationRequest request
     ){
-        return ResponseEntity.ok(authService.authenticate(request));
+        return new ResponseEntity<>(authService.authenticate(request), HttpStatus.OK);
     }
 }
