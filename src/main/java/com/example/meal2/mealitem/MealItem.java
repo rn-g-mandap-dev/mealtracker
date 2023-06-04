@@ -26,6 +26,11 @@ public class MealItem {
     @Column(name="id")
     private Long id;
 
+    @NotNull(message="user => must not be null")
+    @JsonProperty("user")
+    @Column(name="user_id")
+    private Integer userId;
+
     @Schema(example="meal description")
     @NotBlank(message="meal => must not be blank")
     @Size(max=512, message="meal => must not exceed 512 characters")
@@ -94,6 +99,14 @@ public class MealItem {
     }
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     @Override

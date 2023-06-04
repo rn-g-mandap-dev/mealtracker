@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface MealItemService {
     List<MealItem> getAllMealItems(
+            Integer userId,
             String search,
             Integer page,
             Integer size,

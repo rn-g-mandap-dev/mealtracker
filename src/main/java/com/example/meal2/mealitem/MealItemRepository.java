@@ -33,10 +33,12 @@ public interface MealItemRepository extends JpaRepository<MealItem, Long> {
         WHERE
             (mi.meal LIKE CONCAT('%', :s, '%') OR mi.note LIKE CONCAT('%', :s, '%')) AND
             (:#{#ms?.name()} IS NULL OR :#{#ms?.name()} = mi.meal_size) AND
-            (:sd <= mi.meal_date AND :ed >= mi.meal_date) AND
-            (:st <= mi.meal_time AND :et >= mi.meal_time)
+            (:sd <= mi.meal_date AND :ed >= mi.meal_date) AND 
+            (:st <= mi.meal_time AND :et >= mi.meal_time) AND 
+            (:uid = mi.user_id)
     """, nativeQuery=true)
     List<MealItem> getAllMealItems(
+            @Param("uid") Integer userId,
             @Param("s") String search,
             @Param("ms") MealItem.MealSize mealSize,
             @Param("sd") LocalDate startDate,

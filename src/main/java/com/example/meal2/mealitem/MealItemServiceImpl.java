@@ -24,6 +24,7 @@ public class MealItemServiceImpl implements MealItemService{
 
     @Override
     public List<MealItem> getAllMealItems(
+            Integer userId,
             String search,
             Integer page,
             Integer size,
@@ -48,7 +49,7 @@ public class MealItemServiceImpl implements MealItemService{
                 page,
                 size,
                 Sort.by("meal_date").descending().and(Sort.by("meal_time").descending()));
-        return mealItemRepository.getAllMealItems(search, mealSize, startDate, endDate, startTime, endTime, pageable);
+        return mealItemRepository.getAllMealItems(userId, search, mealSize, startDate, endDate, startTime, endTime, pageable);
     }
 
     @Override

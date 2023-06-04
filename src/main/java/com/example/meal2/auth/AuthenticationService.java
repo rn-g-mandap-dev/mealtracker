@@ -9,6 +9,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class AuthenticationService {
 
@@ -31,6 +34,7 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
         repository.save(user);
+        // todo registration should not return jwt...
         var jwtToken = jwtService.generateToken(user);
         var authResponse = new AuthenticationResponse();
         authResponse.setToken(jwtToken);
@@ -46,7 +50,10 @@ public class AuthenticationService {
         );
         var user = repository.findByUsername(request.getUsername())
                 .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("uid", user.getId());
+        var jwtToken = jwtService.generateToken(claims, user);
         var authResponse = new AuthenticationResponse();
         authResponse.setToken(jwtToken);
         return authResponse;

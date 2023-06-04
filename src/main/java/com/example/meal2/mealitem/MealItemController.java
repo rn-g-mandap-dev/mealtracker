@@ -1,6 +1,7 @@
 package com.example.meal2.mealitem;
 
 import com.example.meal2.exception.ResourceNotFoundException;
+import com.example.meal2.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -14,12 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Tag(
@@ -51,8 +57,14 @@ public class MealItemController {
             )}
         )
     })
+    @PreAuthorize("#u == authentication.principal.username")
     @GetMapping("/meals")
     public ResponseEntity<List<MealItem>> getAllMealItems(
+            @AuthenticationPrincipal User user,
+
+            @Parameter(description="username")
+            @RequestParam(required=true) String u,
+
             @Parameter(description="search (meal descriptions and notes)", schema=@Schema(type="string"))
             @RequestParam Optional<String> q,
 
@@ -77,6 +89,8 @@ public class MealItemController {
             @Parameter(description="end time (hh:mm:ss)", schema=@Schema(type="string", format="time"))
             @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> et
     ){
+        Integer userId = user.getId();
+
         String search = q.orElse("");
         Integer page = p.orElse(0);
         Integer size = s.orElse(0);
@@ -86,7 +100,7 @@ public class MealItemController {
         LocalTime startTime = st.orElse(null);
         LocalTime endTime = et.orElse(null);
 
-        return new ResponseEntity<>(mealItemService.getAllMealItems(search, page, size, type, startDate, endDate, startTime, endTime), HttpStatus.OK);
+        return new ResponseEntity<>(mealItemService.getAllMealItems(userId, search, page, size, type, startDate, endDate, startTime, endTime), HttpStatus.OK);
     }
 
     @Operation(
@@ -103,6 +117,7 @@ public class MealItemController {
                     )}
             )
     })
+    @PostAuthorize("returnObject.body.userId == authentication.principal.id")
     @GetMapping("/meals/{id}")
     public ResponseEntity<MealItem> getMealItem(
             @Parameter(description="MealItem id")
@@ -119,6 +134,7 @@ public class MealItemController {
             summary="add new MealItem object",
             description="add new MealItem object"
     )
+    @PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
     @PostMapping(value="/meals", consumes="application/json")
     public ResponseEntity<?> addMealItem(@RequestBody @Valid MealItem mealItem){
         mealItemService.saveMealItem(mealItem);
@@ -127,31 +143,46 @@ public class MealItemController {
 
     @Operation(
             summary="update MealItem object",
-            description="update MealItem object that matches id"
+            description="update MealItem object that matches id and has proper owner"
     )
+    @PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
     @PutMapping(value="/meals/{id}", consumes="application/json")
     public ResponseEntity<?> updateMealItem(
+            @AuthenticationPrincipal User user,
             @Parameter(description="MealItem id")
             @PathVariable("id") Long id,
             @RequestBody @Valid MealItem mealItem){
-        if(mealItemService.existsById(id)){
-            mealItem.setId(id);
-            mealItemService.saveMealItem(mealItem);
-            return new ResponseEntity<>(null, HttpStatus.OK);
+        Optional<MealItem> mi = mealItemService.getMealItemById(id);
+        if(mi.isPresent()){
+            if(Objects.equals(mi.get().getUserId(), user.getId())){
+                mealItem.setId(id);
+                mealItem.setUserId(user.getId());
+                mealItemService.saveMealItem(mealItem);
+                return new ResponseEntity<>(null, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
         throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
     @Operation(
             summary="delete MealItem object",
-            description="delete MealItem object that matches id"
+            description="delete MealItem object that matches id and has proper owner"
     )
     @DeleteMapping("/meals/{id}")
     public ResponseEntity<?> deleteMealItem(
+            @AuthenticationPrincipal User user,
             @Parameter(description="MealItem id")
             @PathVariable("id") Long id){
-        mealItemService.deleteMealItemById(id);
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        Optional<MealItem> mi = mealItemService.getMealItemById(id);
+        if(mi.isPresent()){
+            if(Objects.equals(mi.get().getUserId(), user.getId())){
+                mealItemService.deleteMealItemById(id);
+                return new ResponseEntity<>(null, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+        throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
 }
