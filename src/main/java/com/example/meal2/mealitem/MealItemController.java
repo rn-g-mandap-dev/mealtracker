@@ -58,7 +58,7 @@ public class MealItemController {
         )
     })
     @PreAuthorize("#u == authentication.principal.username")
-    @GetMapping("/meals")
+    @GetMapping(value="/meals", produces={"application/json"})
     public ResponseEntity<List<MealItem>> getAllMealItems(
             @AuthenticationPrincipal User user,
 
@@ -118,7 +118,7 @@ public class MealItemController {
             )
     })
     @PostAuthorize("returnObject.body.userId == authentication.principal.id")
-    @GetMapping("/meals/{id}")
+    @GetMapping(value="/meals/{id}", produces={"application/json"})
     public ResponseEntity<MealItem> getMealItem(
             @Parameter(description="MealItem id")
             @PathVariable("id") Long id
@@ -135,7 +135,7 @@ public class MealItemController {
             description="add new MealItem object"
     )
     @PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
-    @PostMapping(value="/meals", consumes="application/json")
+    @PostMapping(value="/meals", consumes={"application/json"}, produces={"application/json"})
     public ResponseEntity<?> addMealItem(@RequestBody @Valid MealItem mealItem){
         mealItemService.saveMealItem(mealItem);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
@@ -146,7 +146,7 @@ public class MealItemController {
             description="update MealItem object that matches id and has proper owner"
     )
     @PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
-    @PutMapping(value="/meals/{id}", consumes="application/json")
+    @PutMapping(value="/meals/{id}", consumes={"application/json"}, produces={"application/json"})
     public ResponseEntity<?> updateMealItem(
             @AuthenticationPrincipal User user,
             @Parameter(description="MealItem id")
@@ -169,7 +169,7 @@ public class MealItemController {
             summary="delete MealItem object",
             description="delete MealItem object that matches id and has proper owner"
     )
-    @DeleteMapping("/meals/{id}")
+    @DeleteMapping(value="/meals/{id}", produces={"application/json"})
     public ResponseEntity<?> deleteMealItem(
             @AuthenticationPrincipal User user,
             @Parameter(description="MealItem id")
