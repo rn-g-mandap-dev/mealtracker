@@ -1,5 +1,6 @@
 package com.example.meal2.mealitem;
 
+import com.example.meal2.aftermealnote.AfterMealNote;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Entity
 @Table(name="meal_item")
@@ -58,6 +60,17 @@ public class MealItem {
     @Size(max=256, message="note => must not exceed 256 characters")
     @Column(name="note", nullable=true)
     private String note;
+
+    @OneToMany(mappedBy="mealItemId")
+    private Set<AfterMealNote> afterMealNotes;
+
+    public Set<AfterMealNote> getAfterMealNotes() {
+        return afterMealNotes;
+    }
+
+    public void setAfterMealNotes(Set<AfterMealNote> afterMealNotes) {
+        this.afterMealNotes = afterMealNotes;
+    }
 
     public Long getId() {
         return id;
