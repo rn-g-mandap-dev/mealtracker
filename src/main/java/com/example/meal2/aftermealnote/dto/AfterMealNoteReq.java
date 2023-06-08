@@ -1,9 +1,8 @@
-package com.example.meal2.aftermealnote;
+package com.example.meal2.aftermealnote.dto;
 
-import com.example.meal2.mealitem.MealItem;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,14 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Entity
-@Table(name="after_meal_note")
-public class AfterMealNote {
-
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="id")
-    private Long id;
+public class AfterMealNoteReq {
 
     @NotNull(message="mealId => must not be null")
     @JsonProperty("mealId")
@@ -40,19 +32,11 @@ public class AfterMealNote {
     @Column(name="note", nullable=false)
     private String note;
 
-    @ManyToOne
-    //@JsonManagedReference
-    //@JsonIgnore
-    @JsonBackReference
-    @JoinColumn(name="meal_item_id", insertable=false, updatable=false, referencedColumnName = "id")
-    private MealItem mealItem;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public AfterMealNoteReq(Long mealItemId, LocalDate date, LocalTime time, String note) {
+        this.mealItemId = mealItemId;
+        this.date = date;
+        this.time = time;
+        this.note = note;
     }
 
     public Long getMealItemId() {
@@ -85,13 +69,5 @@ public class AfterMealNote {
 
     public void setNote(String note) {
         this.note = note;
-    }
-
-    public MealItem getMealItem() {
-        return mealItem;
-    }
-
-    public void setMealItem(MealItem mealItem) {
-        this.mealItem = mealItem;
     }
 }

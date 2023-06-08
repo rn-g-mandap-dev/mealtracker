@@ -1,7 +1,7 @@
 package com.example.meal2.mealitem;
 
 import com.example.meal2.aftermealnote.AfterMealNote;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -62,6 +62,8 @@ public class MealItem {
     private String note;
 
     @OneToMany(mappedBy="mealItemId")
+    //@JsonBackReference
+    @JsonManagedReference
     private Set<AfterMealNote> afterMealNotes;
 
     public Set<AfterMealNote> getAfterMealNotes() {
