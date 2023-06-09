@@ -1,7 +1,9 @@
 package com.example.meal2.mealitem;
 
 
+import com.example.meal2.user.User;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,6 +24,6 @@ public interface MealItemService {
     void saveMealItem(MealItem mealItem);
     void updateMealItem(MealItem mealItem);
     Optional<MealItem> getMealItemById(Long id);
-    void deleteMealItemById(Long id);
+    void deleteMealItemById(@AuthenticationPrincipal User user, Long id);
     boolean existsById(Long id);
 }

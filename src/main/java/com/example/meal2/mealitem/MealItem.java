@@ -39,8 +39,8 @@ public class MealItem {
     @Column(name="meal", nullable=false)
     private String meal;
 
-    @NotNull(message="date => must not be blank (dd-MM-yyyy)")
-    @DateTimeFormat(pattern="dd-MM-yyyy")
+    @NotNull(message="date => must not be blank (yyyy-mm-dd)")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name="meal_date", columnDefinition="DATE", nullable=false)
     private LocalDate date;
 
@@ -63,7 +63,8 @@ public class MealItem {
 
     @OneToMany(mappedBy="mealItemId")
     //@JsonBackReference
-    @JsonManagedReference
+    //@JsonManagedReference
+    @JsonIgnoreProperties("mealItem")
     private Set<AfterMealNote> afterMealNotes;
 
     public Set<AfterMealNote> getAfterMealNotes() {

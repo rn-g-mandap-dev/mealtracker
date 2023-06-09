@@ -176,15 +176,9 @@ public class MealItemController {
             @AuthenticationPrincipal User user,
             @Parameter(description="MealItem id")
             @PathVariable("id") Long id){
-        Optional<MealItem> mi = mealItemService.getMealItemById(id);
-        if(mi.isPresent()){
-            if(Objects.equals(mi.get().getUserId(), user.getId())){
-                mealItemService.deleteMealItemById(id);
-                return new ResponseEntity<>(null, HttpStatus.OK);
-            }
-            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-        }
-        throw new ResourceNotFoundException("mealitem id not found: " + id);
+
+        mealItemService.deleteMealItemById(user, id);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
 }

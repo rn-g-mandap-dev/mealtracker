@@ -1,15 +1,20 @@
 package com.example.meal2.mealitem;
 
+import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceNotFoundException;
+import com.example.meal2.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -68,8 +73,16 @@ public class MealItemServiceImpl implements MealItemService{
     }
 
     @Override
-    public void deleteMealItemById(Long id) {
-        mealItemRepository.deleteById(id);
+    public void deleteMealItemById(@AuthenticationPrincipal User user, Long id) {
+        Optional<MealItem> mi = mealItemRepository.findById(id);
+        if(mi.isPresent()){
+            if(Objects.equals(mi.get().getUserId(), user.getId())){
+                mealItemRepository.deleteById(id);
+                return;
+            }
+            throw new NotResourceOwnerException("does not own this resource");
+        }
+        throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
 
     @Override

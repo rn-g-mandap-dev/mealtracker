@@ -42,6 +42,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NotResourceOwnerException.class)
+    public ResponseEntity<Map<String, List<String>>> handleNotResourceOwnerException(NotResourceOwnerException ex){
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, List<String>>> handleResourceNotFoundException(ResourceNotFoundException ex){
         List<String> errors = Collections.singletonList(ex.getMessage());

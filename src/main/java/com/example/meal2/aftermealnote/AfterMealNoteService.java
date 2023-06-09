@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface AfterMealNoteService {
     void createAfterMealNote(AfterMealNote afterMealNote);
     Optional<AfterMealNote> getAfterMealNote(Long id);
-    List<AfterMealNoteRes> getAllAfterMealNotes();
+    List<AfterMealNote> getAllAfterMealNotes();
     void updateAfterMealNote(AfterMealNote afterMealNote);
     void deleteAfterMealNote(Long id);
 }

@@ -25,8 +25,8 @@ public class AfterMealNote {
     @Column(name="meal_item_id", nullable=false)
     private Long mealItemId;
 
-    @NotNull(message="date => must not be blank (dd-MM-yyyy)")
-    @DateTimeFormat(pattern="dd-MM-yyyy")
+    @NotNull(message="date => must not be blank (yyyy-mm-dd)")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name="note_date", columnDefinition="DATE", nullable=false)
     private LocalDate date;
 
@@ -43,7 +43,8 @@ public class AfterMealNote {
     @ManyToOne
     //@JsonManagedReference
     //@JsonIgnore
-    @JsonBackReference
+    //@JsonBackReference
+    @JsonIgnoreProperties("afterMealNotes")
     @JoinColumn(name="meal_item_id", insertable=false, updatable=false, referencedColumnName = "id")
     private MealItem mealItem;
 

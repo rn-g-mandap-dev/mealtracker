@@ -58,7 +58,8 @@ public class AfterMealNoteServiceImpl implements AfterMealNoteService {
     }
 
     @Override
-    public List<AfterMealNoteRes> getAllAfterMealNotes() {
+    public List<AfterMealNote> getAllAfterMealNotes() {
+        /*
         List<AfterMealNote> amnl = afterMealNoteRepository.findAll();
         List<AfterMealNoteRes> amnsl = new ArrayList<>();
         for(AfterMealNote amn : amnl){
@@ -79,7 +80,11 @@ public class AfterMealNoteServiceImpl implements AfterMealNoteService {
                     )
             ));
         }
+
         return amnsl;
+
+         */
+        return afterMealNoteRepository.findAll();
     }
 
     @Override
