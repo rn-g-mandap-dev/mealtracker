@@ -1,8 +1,13 @@
 package com.example.meal2.mealitem;
 
+import com.example.meal2.aftermealnote.dto.AfterMealNoteInfoDTO;
 import com.example.meal2.exception.NotResourceOwnerException;
 import com.example.meal2.exception.ResourceNotFoundException;
+import com.example.meal2.mealitem.dto.MealItemCreationDTO;
+import com.example.meal2.mealitem.dto.MealItemDetailedDTO;
+import com.example.meal2.mealitem.dto.MealItemUpdateDTO;
 import com.example.meal2.user.User;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,9 +18,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MealItemServiceImpl implements MealItemService{
@@ -27,9 +34,10 @@ public class MealItemServiceImpl implements MealItemService{
         this.mealItemRepository = mealItemRepository;
     }
 
+    // todo research if refactor into builder pattern needed
     @Override
-    public List<MealItem> getAllMealItems(
-            Integer userId,
+    public List<MealItemDetailedDTO> getAllMealItems(
+            User user,
             String search,
             Integer page,
             Integer size,
@@ -38,6 +46,7 @@ public class MealItemServiceImpl implements MealItemService{
             LocalDate endDate,
             LocalTime startTime,
             LocalTime endTime) {
+
         int DEFAULT_SIZE = 32;
         int MAX_SIZE = 50;
         LocalDate DEFAULT_START_DATE = LocalDate.parse("0000-01-01");
@@ -54,17 +63,57 @@ public class MealItemServiceImpl implements MealItemService{
                 page,
                 size,
                 Sort.by("meal_date").descending().and(Sort.by("meal_time").descending()));
-        return mealItemRepository.getAllMealItems(userId, search, mealSize, startDate, endDate, startTime, endTime, pageable);
+
+        return mealItemRepository.getAllMealItems(user.getId(), search, mealSize, startDate, endDate, startTime, endTime, pageable)
+                .stream()
+                .map(this::convertMealItem2DetailedDTO)
+                .toList();
+
     }
+
+    //@PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
+    @Override
+    public Long createMealItem(User user, @Valid MealItemCreationDTO mealItemCreationDTO) {
+        // todo convert dto to entity
+        // todo should user parameter be used or method level security
+
+        MealItem mi = new MealItem();
+        mi.setUserId(user.getId());
+        mi.setMeal(mealItemCreationDTO.meal());
+        mi.setDate(mealItemCreationDTO.date());
+        mi.setTime(mealItemCreationDTO.time());
+        mi.setMealSize(mealItemCreationDTO.mealSize());
+        mi.setNote(mealItemCreationDTO.note());
+
+        return mealItemRepository.save(mi).getId();
+    }
+
 
     @Override
     public void saveMealItem(MealItem mealItem) {
         mealItemRepository.save(mealItem);
     }
 
+
+
+
+    //@PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
     @Override
-    public void updateMealItem(MealItem mealItem) {
-        mealItemRepository.save(mealItem);
+    public void updateMealItem(User user, Long mealItemId, @Valid MealItemUpdateDTO mealItemUpdateDTO) {
+        Optional<MealItem> mi = getMealItemById(mealItemId);
+        if(mi.isPresent()){
+            if(Objects.equals(mi.get().getUserId(), user.getId())){
+                mi.get().setMeal(mealItemUpdateDTO.meal());
+                mi.get().setDate(mealItemUpdateDTO.date());
+                mi.get().setTime(mealItemUpdateDTO.time());
+                mi.get().setMealSize(mealItemUpdateDTO.mealSize());
+                mi.get().setNote(mealItemUpdateDTO.note());
+                saveMealItem(mi.get());
+                return;
+            }
+            throw new NotResourceOwnerException("does not own this resource");
+        }
+        throw new ResourceNotFoundException("mealitem id not found: " + mealItemId);
     }
 
     @Override
@@ -72,8 +121,42 @@ public class MealItemServiceImpl implements MealItemService{
         return mealItemRepository.findById(id);
     }
 
+    private MealItemDetailedDTO convertMealItem2DetailedDTO(MealItem mi){
+        List<AfterMealNoteInfoDTO> amniDTO = mi.getAfterMealNotes()
+                .stream()
+                .map(amn -> new AfterMealNoteInfoDTO(
+                        amn.getId(),
+                        amn.getDate(),
+                        amn.getTime(),
+                        amn.getNote()
+                ))
+                .toList();
+        return new MealItemDetailedDTO(
+                mi.getId(),
+                mi.getUserId(),
+                mi.getMeal(),
+                mi.getDate(),
+                mi.getTime(),
+                mi.getMealSize(),
+                mi.getNote(),
+                amniDTO
+        );
+    }
+
     @Override
-    public void deleteMealItemById(@AuthenticationPrincipal User user, Long id) {
+    public MealItemDetailedDTO getMealItem(User user, Long id) {
+        Optional<MealItem> mi = getMealItemById(id);
+        if(mi.isPresent()){
+            if(Objects.equals(mi.get().getUserId(), user.getId())){
+                return convertMealItem2DetailedDTO(mi.get());
+            }
+            throw new NotResourceOwnerException("does not own this resource");
+        }
+        throw new ResourceNotFoundException("mealitem id not found: " + id);
+    }
+
+    @Override
+    public void deleteMealItemById(User user, Long id) {
         Optional<MealItem> mi = mealItemRepository.findById(id);
         if(mi.isPresent()){
             if(Objects.equals(mi.get().getUserId(), user.getId())){

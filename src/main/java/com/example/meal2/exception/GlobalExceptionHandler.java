@@ -1,5 +1,7 @@
 package com.example.meal2.exception;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<String>>> handleAuthenticationException(AuthenticationException ex){
         List<String> errors = Collections.singletonList(ex.getMessage());
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, List<String>>> handleConstraintViolationException(ConstraintViolationException ex){
+        List<String> errors = ex.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

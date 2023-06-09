@@ -2,8 +2,10 @@ package com.example.meal2.mealitem;
 
 import com.example.meal2.exception.NotResourceOwnerException;
 import com.example.meal2.exception.ResourceNotFoundException;
+import com.example.meal2.mealitem.dto.MealItemCreationDTO;
 import com.example.meal2.user.Role;
 import com.example.meal2.user.User;
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -52,11 +54,23 @@ class MealItemServiceImplTest {
         mealItem.setNote("test note");
     }
 
-    /*
-    successful delete
-    error on delete does not exist
-    error on delete not owner of resource
-     */
+    @Test
+    void normal_createMealItem(){
+        MealItemCreationDTO micDTO = new MealItemCreationDTO(
+                "standard meal",
+                LocalDate.parse("2023-06-09"),
+                LocalTime.parse("14:35:00"),
+                MealItem.MealSize.heavy,
+                "test note"
+        );
+
+        when(mealItemRepository.save(mealItem)).thenReturn(mealItem);
+
+        Long returnId = mealItemService.createMealItem(user, micDTO);
+
+        verify(mealItemRepository, times(1)).save(mealItem);
+        assertEquals(mealItem.getId(), returnId);
+    }
 
     @Test
     void normal_deleteMealItemById() {

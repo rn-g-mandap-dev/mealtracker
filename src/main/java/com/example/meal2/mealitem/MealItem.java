@@ -57,7 +57,7 @@ public class MealItem {
     private MealSize mealSize;
 
     @Schema(example="meal note")
-    @Size(max=256, message="note => must not exceed 256 characters")
+    @Size(max=255, message="note => must not exceed 255 characters")
     @Column(name="note", nullable=true)
     private String note;
 
@@ -129,11 +129,15 @@ public class MealItem {
     public String toString() {
         return "MealItem{" +
                 "id=" + id +
+                ", userId=" + userId +
                 ", meal='" + meal + '\'' +
                 ", date=" + date +
                 ", time=" + time +
                 ", mealSize=" + mealSize +
                 ", note='" + note + '\'' +
+                ", afterMealNotes=" + afterMealNotes +
                 '}';
     }
+
+
 }

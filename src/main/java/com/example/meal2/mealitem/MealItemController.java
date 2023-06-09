@@ -1,6 +1,10 @@
 package com.example.meal2.mealitem;
 
 import com.example.meal2.exception.ResourceNotFoundException;
+import com.example.meal2.mealitem.dto.MealItemCreationDTO;
+import com.example.meal2.mealitem.dto.MealItemCreationResponse;
+import com.example.meal2.mealitem.dto.MealItemDetailedDTO;
+import com.example.meal2.mealitem.dto.MealItemUpdateDTO;
 import com.example.meal2.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,6 +49,65 @@ public class MealItemController {
         this.mealItemService = mealItemService;
     }
 
+    @Operation(
+            summary="get all MealItem objects",
+            description="get all MealItem objects that match parameters"
+    )
+    @ApiResponses(value={
+            @ApiResponse(
+                    responseCode="200",
+                    description="list of MealItem objects",
+                    content={@Content(
+                            mediaType="application/json",
+                            array=@ArraySchema(schema=@Schema(implementation=MealItemDetailedDTO.class))
+                    )}
+            )
+    })
+    @GetMapping(value="/meals", produces={"application/json"})
+    public ResponseEntity<List<MealItemDetailedDTO>> getAllMealItems(
+            @AuthenticationPrincipal User user,
+
+            @Parameter(description="search (meal descriptions and notes)", schema=@Schema(type="string"))
+            @RequestParam Optional<String> q,
+
+            @Parameter(description="page (starts at 0)")
+            @RequestParam Optional<Integer> p,
+
+            @Parameter(description="size (default: 32, max: 50)")
+            @RequestParam Optional<Integer> s,
+
+            @Parameter(description="meal size")
+            @RequestParam Optional<MealItem.MealSize> m,
+
+            @Parameter(description="start date (yyyy-mm-dd)")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> sd,
+
+            @Parameter(description="end date (yyyy-mm-dd)")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> ed,
+
+            @Parameter(description="start time (hh:mm:ss)", schema=@Schema(type="string", format="time"))
+            @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> st,
+
+            @Parameter(description="end time (hh:mm:ss)", schema=@Schema(type="string", format="time"))
+            @RequestParam @DateTimeFormat(pattern="hh:mm:ss") Optional<LocalTime> et
+    ){
+
+        String search = q.orElse("");
+        Integer page = p.orElse(0);
+        Integer size = s.orElse(0);
+        MealItem.MealSize type = m.orElse(null);
+        LocalDate startDate = sd.orElse(null);
+        LocalDate endDate = ed.orElse(null);
+        LocalTime startTime = st.orElse(null);
+        LocalTime endTime = et.orElse(null);
+
+        return new ResponseEntity<>(
+                mealItemService.getAllMealItems(user, search, page, size, type, startDate, endDate, startTime, endTime),
+                HttpStatus.OK
+        );
+    }
+
+    /*
     @Operation(
         summary="get all MealItem objects",
         description="get all MealItem objects that match parameters"
@@ -104,7 +167,9 @@ public class MealItemController {
 
         return new ResponseEntity<>(mealItemService.getAllMealItems(userId, search, page, size, type, startDate, endDate, startTime, endTime), HttpStatus.OK);
     }
+    */
 
+    /*
     @Operation(
             summary="get MealItem object",
             description="get MealItem object that matches id"
@@ -131,7 +196,47 @@ public class MealItemController {
         }
         throw new ResourceNotFoundException("mealitem id not found: " + id);
     }
+    */
+    @Operation(
+            summary="get MealItem object",
+            description="get MealItem object that matches id"
+    )
+    @ApiResponses(value={
+            @ApiResponse(
+                    responseCode="200",
+                    description="MealItem object",
+                    content={@Content(
+                            mediaType="application/json",
+                            schema=@Schema(implementation=MealItemDetailedDTO.class)
+                    )}
+            )
+    })
+    @GetMapping(value="/meals/{id}", produces={"application/json"})
+    public ResponseEntity<MealItemDetailedDTO> getMealItem(
+            @AuthenticationPrincipal User user,
+            @Parameter(description="MealItem id")
+            @PathVariable("id") Long id
+    ){
+        return new ResponseEntity<>(mealItemService.getMealItem(user, id), HttpStatus.OK);
+    }
 
+    @Operation(
+            summary="add new MealItem object",
+            description="add new MealItem object"
+    )
+    @PostMapping(value="/meals", consumes={"application/json"}, produces={"application/json"})
+    public ResponseEntity<?> addMealItem(
+            @AuthenticationPrincipal User user,
+            @RequestBody MealItemCreationDTO mealItemCreationDTO
+    ){
+        return new ResponseEntity<>(
+                new MealItemCreationResponse(
+                        mealItemService.createMealItem(user, mealItemCreationDTO)
+                ),
+                HttpStatus.CREATED
+        );
+    }
+    /*
     @Operation(
             summary="add new MealItem object",
             description="add new MealItem object"
@@ -142,7 +247,23 @@ public class MealItemController {
         mealItemService.saveMealItem(mealItem);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
+    */
 
+
+    @Operation(
+            summary="update MealItem object",
+            description="update MealItem object that matches id and has proper owner"
+    )
+    @PutMapping(value="/meals/{id}", consumes={"application/json"}, produces={"application/json"})
+    public ResponseEntity<?> updateMealItem(
+            @AuthenticationPrincipal User user,
+            @Parameter(description="MealItem id")
+            @PathVariable("id") Long id,
+            @RequestBody @Valid MealItemUpdateDTO mealItemUpdateDTO){
+        mealItemService.updateMealItem(user, id, mealItemUpdateDTO);
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+    /*
     @Operation(
             summary="update MealItem object",
             description="update MealItem object that matches id and has proper owner"
@@ -164,8 +285,11 @@ public class MealItemController {
             }
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
-        throw new ResourceNotFoundException("mealitem id not found: " + id);
+        throw new ResourceNotFoundException("mealit" +
+                "em id not found: " + id);
     }
+    */
+
 
     @Operation(
             summary="delete MealItem object",
