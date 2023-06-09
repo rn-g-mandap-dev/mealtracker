@@ -14,18 +14,6 @@ import java.util.List;
 @Repository
 public interface MealItemRepository extends JpaRepository<MealItem, Long> {
 
-    /*
-    java.lang.IllegalArgumentException: Argument [light] of type [java.lang.String] did not match
-    parameter type [com.example.meal2.mealitem.MealItem$MealSize (n/a)]
-    @Query(value=
-    """
-        SELECT mi 
-        FROM MealItem mi         
-        WHERE
-            (mi.meal LIKE CONCAT('%', :s, '%') OR mi.note LIKE CONCAT('%', :s, '%')) AND
-            (:#{#ms?.name()} IS NULL OR :#{#ms?.name()} = mi.mealSize)
-    """)
-    */
     @Query(value=
     """
         SELECT mi.*

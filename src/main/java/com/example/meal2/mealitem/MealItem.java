@@ -62,8 +62,6 @@ public class MealItem {
     private String note;
 
     @OneToMany(mappedBy="mealItemId")
-    //@JsonBackReference
-    //@JsonManagedReference
     @JsonIgnoreProperties("mealItem")
     private Set<AfterMealNote> afterMealNotes;
 

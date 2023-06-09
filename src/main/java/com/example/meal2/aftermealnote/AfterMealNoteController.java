@@ -51,17 +51,5 @@ public class AfterMealNoteController {
         );
     }
 
-    /*
-    @Operation(
-            summary="add new MealItem object",
-            description="add new MealItem object"
-    )
-    @PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
-    @PostMapping(value="/meals", consumes={"application/json"}, produces={"application/json"})
-    public ResponseEntity<?> addMealItem(@RequestBody @Valid MealItem mealItem){
-        mealItemService.saveMealItem(mealItem);
-        return new ResponseEntity<>(null, HttpStatus.CREATED);
-    }
 
-     */
 }

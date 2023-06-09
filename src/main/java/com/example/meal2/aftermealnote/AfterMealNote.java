@@ -41,9 +41,6 @@ public class AfterMealNote {
     private String note;
 
     @ManyToOne
-    //@JsonManagedReference
-    //@JsonIgnore
-    //@JsonBackReference
     @JsonIgnoreProperties("afterMealNotes")
     @JoinColumn(name="meal_item_id", insertable=false, updatable=false, referencedColumnName = "id")
     private MealItem mealItem;

@@ -71,11 +71,8 @@ public class MealItemServiceImpl implements MealItemService{
 
     }
 
-    //@PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
     @Override
     public Long createMealItem(User user, @Valid MealItemCreationDTO mealItemCreationDTO) {
-        // todo convert dto to entity
-        // todo should user parameter be used or method level security
 
         MealItem mi = new MealItem();
         mi.setUserId(user.getId());
@@ -88,16 +85,11 @@ public class MealItemServiceImpl implements MealItemService{
         return mealItemRepository.save(mi).getId();
     }
 
-
     @Override
     public void saveMealItem(MealItem mealItem) {
         mealItemRepository.save(mealItem);
     }
 
-
-
-
-    //@PreAuthorize("#mealItem.getUserId() == authentication.principal.id")
     @Override
     public void updateMealItem(User user, Long mealItemId, @Valid MealItemUpdateDTO mealItemUpdateDTO) {
         Optional<MealItem> mi = getMealItemById(mealItemId);
@@ -172,6 +164,5 @@ public class MealItemServiceImpl implements MealItemService{
     public boolean existsById(Long id) {
         return mealItemRepository.existsById(id);
     }
-
 
 }
