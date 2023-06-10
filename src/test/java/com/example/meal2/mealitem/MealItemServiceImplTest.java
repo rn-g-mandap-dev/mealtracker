@@ -63,12 +63,21 @@ class MealItemServiceImplTest {
                 MealItem.MealSize.heavy,
                 "test note"
         );
+        MealItem bmealItem = new MealItem();
+        bmealItem.setUserId(9999);
+        bmealItem.setMeal("standard meal");
+        bmealItem.setDate(LocalDate.parse("2023-06-09"));
+        bmealItem.setTime(LocalTime.parse("14:35:00"));
+        bmealItem.setMealSize(MealItem.MealSize.heavy);
+        bmealItem.setNote("test note");
 
-        when(mealItemRepository.save(mealItem)).thenReturn(mealItem);
+        when(mealItemRepository.save(bmealItem)).thenReturn(mealItem);
+        //when(mealItemRepository.save(any(MealItem.class))).thenReturn(mealItem);
 
         Long returnId = mealItemService.createMealItem(user, micDTO);
 
-        verify(mealItemRepository, times(1)).save(mealItem);
+        //verify(mealItemRepository, times(1)).save(mealItem);
+        verify(mealItemRepository, times(1)).save(any(MealItem.class));
         assertEquals(mealItem.getId(), returnId);
     }
 

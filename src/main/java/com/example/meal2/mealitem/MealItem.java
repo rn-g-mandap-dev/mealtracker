@@ -13,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -137,5 +138,16 @@ public class MealItem {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MealItem mealItem = (MealItem) o;
+        return Objects.equals(id, mealItem.id) && Objects.equals(userId, mealItem.userId) && Objects.equals(meal, mealItem.meal) && Objects.equals(date, mealItem.date) && Objects.equals(time, mealItem.time) && mealSize == mealItem.mealSize && Objects.equals(note, mealItem.note) && Objects.equals(afterMealNotes, mealItem.afterMealNotes);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, userId, meal, date, time, mealSize, note, afterMealNotes);
+    }
 }
