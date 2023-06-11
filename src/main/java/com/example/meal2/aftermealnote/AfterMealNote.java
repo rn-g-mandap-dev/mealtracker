@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 
 @Entity
 @Table(name="after_meal_note")
@@ -92,4 +93,33 @@ public class AfterMealNote {
     public void setMealItem(MealItem mealItem) {
         this.mealItem = mealItem;
     }
+
+    /*
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AfterMealNote that)) return false;
+        return Objects.equals(id, that.id) && Objects.equals(mealItemId, that.mealItemId) && Objects.equals(date, that.date) && Objects.equals(time, that.time) && Objects.equals(note, that.note) && Objects.equals(mealItem, that.mealItem);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, mealItemId, date, time, note, mealItem);
+    }
+    */
+    /*
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AfterMealNote that = (AfterMealNote) o;
+        return Objects.equals(id, that.id) && Objects.equals(mealItemId, that.mealItemId) && Objects.equals(date, that.date) && Objects.equals(time, that.time) && Objects.equals(note, that.note) && Objects.equals(mealItem, that.mealItem);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, mealItemId, date, time, note, mealItem);
+    }
+
+     */
 }

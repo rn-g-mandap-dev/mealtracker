@@ -35,7 +35,7 @@ import java.util.Optional;
 
 @Tag(
     name="MealItem controller",
-    description = "provides api from MealItem"
+    description = "provides api for MealItem"
 )
 @SecurityRequirement(name = "Bearer Authentication")
 @RestController

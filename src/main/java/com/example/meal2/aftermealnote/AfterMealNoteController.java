@@ -4,12 +4,19 @@ import com.example.meal2.aftermealnote.dto.AfterMealNoteReq;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.mealitem.MealItem;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(
+        name="AfterMealNote controller",
+        description = "provides api for AfterMealNote"
+)
+@SecurityRequirement(name = "Bearer Authentication")
 @RestController
 @RequestMapping("/api/v1")
 public class AfterMealNoteController {

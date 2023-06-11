@@ -62,7 +62,7 @@ public class MealItem {
     @Column(name="note", nullable=true)
     private String note;
 
-    @OneToMany(mappedBy="mealItemId")
+    @OneToMany(mappedBy="mealItemId", orphanRemoval=true)
     @JsonIgnoreProperties("mealItem")
     private Set<AfterMealNote> afterMealNotes;
 
@@ -138,16 +138,4 @@ public class MealItem {
                 '}';
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MealItem mealItem = (MealItem) o;
-        return Objects.equals(id, mealItem.id) && Objects.equals(userId, mealItem.userId) && Objects.equals(meal, mealItem.meal) && Objects.equals(date, mealItem.date) && Objects.equals(time, mealItem.time) && mealSize == mealItem.mealSize && Objects.equals(note, mealItem.note) && Objects.equals(afterMealNotes, mealItem.afterMealNotes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, userId, meal, date, time, mealSize, note, afterMealNotes);
-    }
 }
