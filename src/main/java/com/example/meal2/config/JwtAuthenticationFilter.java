@@ -41,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        // todo add exception expired jwt
         jwt = authHeader.substring(7);
         username = jwtService.extractUsername(jwt); // todo extract username from JWT;
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){

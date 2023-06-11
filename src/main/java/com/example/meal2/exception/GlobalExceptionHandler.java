@@ -1,5 +1,6 @@
 package com.example.meal2.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    // does not get called!
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<Map<String, List<String>>> handleExpiredJwtException(ExpiredJwtException ex){
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -1,8 +1,7 @@
 package com.example.meal2.mealitem;
 
-import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.mealitem.dto.MealItemCreationDTO;
-import com.example.meal2.mealitem.dto.MealItemCreationResponse;
+import com.example.meal2.mealitem.dto.MealItemCreationResponseDTO;
 import com.example.meal2.mealitem.dto.MealItemDetailedDTO;
 import com.example.meal2.mealitem.dto.MealItemUpdateDTO;
 import com.example.meal2.user.User;
@@ -20,17 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Tag(
@@ -56,7 +51,7 @@ public class MealItemController {
     @ApiResponses(value={
             @ApiResponse(
                     responseCode="200",
-                    description="list of MealItem objects",
+                    description="list of MealItemDetailedDTOs",
                     content={@Content(
                             mediaType="application/json",
                             array=@ArraySchema(schema=@Schema(implementation=MealItemDetailedDTO.class))
@@ -114,7 +109,7 @@ public class MealItemController {
     @ApiResponses(value={
             @ApiResponse(
                     responseCode="200",
-                    description="MealItem object",
+                    description="MealItemDetailedDTO",
                     content={@Content(
                             mediaType="application/json",
                             schema=@Schema(implementation=MealItemDetailedDTO.class)
@@ -140,7 +135,7 @@ public class MealItemController {
             @RequestBody MealItemCreationDTO mealItemCreationDTO
     ){
         return new ResponseEntity<>(
-                new MealItemCreationResponse(
+                new MealItemCreationResponseDTO(
                         mealItemService.createMealItem(user, mealItemCreationDTO)
                 ),
                 HttpStatus.CREATED
@@ -149,7 +144,7 @@ public class MealItemController {
 
     @Operation(
             summary="update MealItem object",
-            description="update MealItem object that matches id and has proper owner"
+            description="update MealItem object that matches id and has proper owner, omitting note will make it null"
     )
     @PutMapping(value="/meals/{id}", consumes={"application/json"}, produces={"application/json"})
     public ResponseEntity<?> updateMealItem(
