@@ -1,5 +1,9 @@
 package com.example.meal2.auth;
 
+import com.example.meal2.auth.dto.AuthenticationResponseDTO;
+import com.example.meal2.user.dto.UserCreationDTO;
+import com.example.meal2.user.dto.UserSigninDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +24,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signin(
-            @RequestBody RegisterRequest request
+    public ResponseEntity<?> signup(
+            @Valid @RequestBody UserCreationDTO userCreationDTO
     ){
-        authService.register(request);
+        authService.register(userCreationDTO);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<AuthenticationResponse> signup(
-            @RequestBody AuthenticationRequest request
+    public ResponseEntity<AuthenticationResponseDTO> signin(
+            @Valid @RequestBody UserSigninDTO userSigninDTO
     ){
-        return new ResponseEntity<>(authService.authenticate(request), HttpStatus.OK);
+        return new ResponseEntity<>(authService.authenticate(userSigninDTO), HttpStatus.OK);
     }
 }
