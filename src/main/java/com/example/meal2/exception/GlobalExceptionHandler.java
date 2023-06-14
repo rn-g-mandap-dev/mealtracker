@@ -11,7 +11,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Collections;
@@ -22,6 +21,13 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(GenericBadRequestException.class)
+    public ResponseEntity<Map<String, List<String>>> handleGenericBadRequestException(GenericBadRequestException ex){
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, List<String>>> handleAuthenticationException(AuthenticationException ex){
@@ -37,6 +43,12 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ExpiredCredentialsException.class)
+    public ResponseEntity<Map<String, List<String>>> handleExpiredCredentialsException(ExpiredCredentialsException ex){
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.UNAUTHORIZED);
     }
 
     // does not get called!
@@ -73,6 +85,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<String>>> handleNotResourceOwnerException(NotResourceOwnerException ex){
         List<String> errors = Collections.singletonList(ex.getMessage());
         return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(ResourceLimitException.class)
+    public ResponseEntity<Map<String, List<String>>> handleResourceLimitException(ResourceLimitException ex){
+        List<String> errors = Collections.singletonList(ex.getMessage());
+        return new ResponseEntity<>(getErrorsMap(errors), new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

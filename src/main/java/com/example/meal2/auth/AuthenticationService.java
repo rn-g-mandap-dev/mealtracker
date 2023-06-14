@@ -1,11 +1,18 @@
 package com.example.meal2.auth;
 
+import com.example.meal2.auth.dto.AuthenticationResponseDTO;
 import com.example.meal2.config.JwtService;
+import com.example.meal2.exception.GenericBadRequestException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
-import com.example.meal2.exception.WrongUsernamePasswordException;
 import com.example.meal2.user.Role;
 import com.example.meal2.user.User;
 import com.example.meal2.user.UserRepository;
+import com.example.meal2.user.dto.UserCreationDTO;
+import com.example.meal2.user.dto.UserSigninDTO;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class AuthenticationService {
@@ -30,38 +36,48 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    public void register(RegisterRequest request) {
-        Optional<User> u = userRepository.findByUsername(request.getUsername());
-        if(u.isEmpty()){
-            User user = new User();
-            user.setUsername(request.getUsername());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setRole(Role.USER);
-            userRepository.save(user);
-            return;
-        }
-        throw new IllegalArgumentException(String.format("username: %s already exists", request.getUsername()));
+    @Value("${users.accountlimit}")
+    private Integer maxUsers;
+
+    public void register(@Valid UserCreationDTO userCreationDTO) {
+        userRepository.findByUsername(userCreationDTO.username()).ifPresentOrElse(
+                user -> {
+                    throw new IllegalArgumentException(
+                            String.format("username: %s already exists", user.getUsername()));
+                },
+                () -> {
+                    if(userRepository.count() >= maxUsers){
+                        throw new ResourceLimitException(String.format("max %d users reached", maxUsers));
+                    }
+                    if(!userCreationDTO.password().equals(userCreationDTO.passwordConfirmation())){
+                        throw new GenericBadRequestException("password and passwordConfirmation must match");
+                    }
+                    User user = new User(
+                            userCreationDTO.username(),
+                            passwordEncoder.encode(userCreationDTO.password()),
+                            Role.USER
+                    );
+                    userRepository.save(user);
+                }
+        );
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponseDTO authenticate(@Valid UserSigninDTO userSigninDTO) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
+                        userSigninDTO.username(),
+                        userSigninDTO.password()
                 )
         );
-        var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("username: %s not found", request.getUsername())));
-
+        var user = userRepository.findByUsername(userSigninDTO.username())
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("username: %s not found", userSigninDTO.username())));
         return generateJwt(user);
     }
 
-    private AuthenticationResponse generateJwt(User user){
+    private AuthenticationResponseDTO generateJwt(User user){
         Map<String, Object> claims = new HashMap<>();
         claims.put("uid", user.getId());
         var jwtToken = jwtService.generateToken(claims, user);
-        var authResponse = new AuthenticationResponse();
-        authResponse.setToken(jwtToken);
-        return authResponse;
+        return new AuthenticationResponseDTO(jwtToken);
     }
 }
