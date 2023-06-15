@@ -103,6 +103,31 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
         thoughtRecordRepository.findById(thoughtRecordId).ifPresentOrElse(
                 tr -> {
                     if(Objects.equals(tr.getUserId(), user.getId())){
+                        // prevent using mood, thought of other thoughtrecords
+                        // by checking if entities are already in thoughtrecord before the update
+                        thoughtRecordDTO.moods().forEach(mDTO -> {
+                            if(mDTO.id() != null){
+                                var wrapper = new Object(){ boolean containsId = false; };
+                                tr.getMoods().forEach(m -> {
+                                    if(Objects.equals(m.getId(), mDTO.id())) wrapper.containsId = true;
+                                });
+                                if(!wrapper.containsId){
+                                    throw new NotResourceOwnerException("does not own this resource: Mood " + mDTO.id());
+                                }
+                            }
+                        });
+                        thoughtRecordDTO.thoughts().forEach(tDTO -> {
+                            if(tDTO.id() != null){
+                                var wrapper = new Object(){ boolean containsId = false; };
+                                tr.getThoughts().forEach(t -> {
+                                    if(Objects.equals(t.getId(), tDTO.id())) wrapper.containsId = true;
+                                });
+                                if(!wrapper.containsId){
+                                    throw new NotResourceOwnerException("does not own this resource: Thought " + tDTO.id());
+                                }
+                            }
+                        });
+
                         tr.setDate(thoughtRecordDTO.date());
                         tr.setTime(thoughtRecordDTO.time());
                         tr.setSituation(thoughtRecordDTO.situation());
