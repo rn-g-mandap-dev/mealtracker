@@ -9,3 +9,5 @@ track meals and leave aftermealnotes
 
 new feature: ThoughtRecords, tracking thoughts, moods, based on the popular book Mind over Mood.
 
+technologies used:
+Spring Boot 3, Jpa/Hibernate, Swagger 3 (OpenApiDoc), MySql, Java 17
