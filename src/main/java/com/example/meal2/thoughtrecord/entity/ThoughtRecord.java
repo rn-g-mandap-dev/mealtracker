@@ -46,10 +46,12 @@ public class ThoughtRecord {
     private String situation;
 
     @OneToMany(orphanRemoval=true, cascade=CascadeType.ALL)
+    @OrderBy("level DESC, mood ASC")
     @JoinColumn(name = "thought_record_id")
     private List<Mood> moods = new ArrayList<>();
 
     @OneToMany(orphanRemoval=true, cascade=CascadeType.ALL)
+    @OrderBy("level DESC, thought ASC")
     @JoinColumn(name = "thought_record_id")
     private List<Thought> thoughts = new ArrayList<>();
 
