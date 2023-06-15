@@ -53,6 +53,9 @@ public class SecurityConfig {
                 .requestMatchers("api/v1/after-meal-notes/**")
                 .authenticated()
 
+                .requestMatchers("api/v1/thought-records/**")
+                .authenticated()
+
                 .requestMatchers("api/v1/auth/**")
                 .permitAll()
                 .requestMatchers(AUTH_WHITELIST)
