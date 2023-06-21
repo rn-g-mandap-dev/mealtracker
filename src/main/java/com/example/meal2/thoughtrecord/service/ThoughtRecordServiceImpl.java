@@ -9,6 +9,7 @@ import com.example.meal2.thoughtrecord.entity.Thought;
 import com.example.meal2.thoughtrecord.entity.ThoughtRecord;
 import com.example.meal2.thoughtrecord.repository.ThoughtRecordRepository;
 import com.example.meal2.user.User;
+import com.example.meal2.util.conversion.ConversionMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -29,9 +30,12 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
 
     private final Validator validator;
 
-    public ThoughtRecordServiceImpl(ThoughtRecordRepository thoughtRecordRepository, Validator validator) {
+    private final ConversionMapper conversionMapper;
+
+    public ThoughtRecordServiceImpl(ThoughtRecordRepository thoughtRecordRepository, Validator validator, ConversionMapper conversionMapper) {
         this.thoughtRecordRepository = thoughtRecordRepository;
         this.validator = validator;
+        this.conversionMapper = conversionMapper;
     }
 
     @Override
@@ -54,7 +58,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
         List<Thought> thoughts = thoughtRecordCreationDTO.thoughts().stream()
                 .map(t -> new Thought(t.thought(), t.level()))
                 .toList();
-        return convertThoughtRecord2DTO(
+        return conversionMapper.convertThoughtRecord2DTO(
                 thoughtRecordRepository.save(new ThoughtRecord(
                         user.getId(),
                         thoughtRecordCreationDTO.date(),
@@ -71,7 +75,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
         return thoughtRecordRepository.findById(thoughtRecordId).map(
                 tr -> {
                     if(Objects.equals(tr.getUserId(), user.getId())){
-                        return convertThoughtRecord2DTO(tr);
+                        return conversionMapper.convertThoughtRecord2DTO(tr);
                     }
                     throw new NotResourceOwnerException("does not own this resource");
                 }).orElseThrow(
@@ -100,7 +104,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
                 Sort.by("tr_date").descending().and(Sort.by("tr_time").descending()));
         return thoughtRecordRepository.getAllThoughtRecords(user.getId(), search, startDate, endDate, startTime, endTime, pageable)
                 .stream()
-                .map(this::convertThoughtRecord2DTO)
+                .map(conversionMapper::convertThoughtRecord2DTO)
                 .toList();
     }
 
@@ -156,7 +160,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
                         tr.setThoughts(thoughtRecordDTO.thoughts().stream()
                                 .map(t -> new Thought(t.id(), t.thought(), t.level()))
                                 .collect(Collectors.toList()));
-                        return convertThoughtRecord2DTO(thoughtRecordRepository.save(tr));
+                        return conversionMapper.convertThoughtRecord2DTO(thoughtRecordRepository.save(tr));
                     }
                     throw new NotResourceOwnerException("does not own this resource");
                 }
@@ -165,21 +169,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
         });
     }
 
-    private ThoughtRecordDTO convertThoughtRecord2DTO(ThoughtRecord tr){
-        return new ThoughtRecordDTO(
-                tr.getId(),
-                tr.getUserId(),
-                tr.getDate(),
-                tr.getTime(),
-                tr.getSituation(),
-                tr.getMoods().stream()
-                        .map(m -> new MoodDTO(m.getId(),m.getMood(),m.getLevel()))
-                        .toList(),
-                tr.getThoughts().stream()
-                        .map(t -> new ThoughtDTO(t.getId(),t.getThought(),t.getLevel()))
-                        .toList()
-        );
-    }
+
 
 
 
