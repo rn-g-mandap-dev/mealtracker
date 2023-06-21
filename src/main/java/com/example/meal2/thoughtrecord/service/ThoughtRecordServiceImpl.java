@@ -4,6 +4,7 @@ import com.example.meal2.exception.NotResourceOwnerException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.thoughtrecord.dto.*;
 import com.example.meal2.thoughtrecord.entity.Mood;
+import com.example.meal2.thoughtrecord.entity.MoodType;
 import com.example.meal2.thoughtrecord.entity.Thought;
 import com.example.meal2.thoughtrecord.entity.ThoughtRecord;
 import com.example.meal2.thoughtrecord.repository.ThoughtRecordRepository;
@@ -18,9 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +38,15 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
     public Long createThoughtRecord(User user, ThoughtRecordCreationDTO thoughtRecordCreationDTO) {
         Set<ConstraintViolation<ThoughtRecordCreationDTO>> violations = validator.validate(thoughtRecordCreationDTO);
         if(!violations.isEmpty()) throw new ConstraintViolationException(violations);
+
+        // check if uses same mood multiple times
+        List<MoodType> moodTypes = new ArrayList<MoodType>();
+        thoughtRecordCreationDTO.moods().forEach(mu -> {
+            if(moodTypes.contains(mu.mood())){
+                throw new IllegalArgumentException("thoughtrecord contains duplicate mood");
+            }
+            moodTypes.add(mu.mood());
+        });
 
         List<Mood> moods = thoughtRecordCreationDTO.moods().stream()
                 .map(m -> new Mood(m.mood(), m.level()))
@@ -99,6 +107,15 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
     public void updateThoughtRecord(User user, Long thoughtRecordId, ThoughtRecordUpdateDTO thoughtRecordDTO) {
         Set<ConstraintViolation<ThoughtRecordUpdateDTO>> violations = validator.validate(thoughtRecordDTO);
         if(!violations.isEmpty()) throw new ConstraintViolationException(violations);
+
+        // check if uses same mood multiple times
+        List<MoodType> moods = new ArrayList<MoodType>();
+        thoughtRecordDTO.moods().forEach(mu -> {
+            if(moods.contains(mu.mood())){
+                throw new IllegalArgumentException("thoughtrecord contains duplicate mood");
+            }
+            moods.add(mu.mood());
+        });
 
         thoughtRecordRepository.findById(thoughtRecordId).ifPresentOrElse(
                 tr -> {
