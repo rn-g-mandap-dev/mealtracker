@@ -46,6 +46,16 @@ public class ThoughtRecordController {
             summary="add new ThoughtRecord object",
             description="add new ThoughtRecord object"
     )
+    @ApiResponses(value={
+            @ApiResponse(
+                    responseCode="200",
+                    description="ThoughtRecordDTO",
+                    content={@Content(
+                            mediaType="application/json",
+                            schema=@Schema(implementation= ThoughtRecordDTO.class)
+                    )}
+            )
+    })
     @PostMapping(value=PATH_HEADER, consumes={"application/json"}, produces={"application/json"})
     public ResponseEntity<?> addThoughtRecord(
             @AuthenticationPrincipal User user,
@@ -68,7 +78,7 @@ public class ThoughtRecordController {
             )
     })
     @GetMapping(value=PATH_HEADER+"/{id}", produces={"application/json"})
-    public ResponseEntity<?> getAfterMealNote(
+    public ResponseEntity<?> getThoughtRecord(
             @AuthenticationPrincipal User user,
             @Parameter(description="ThoughtRecord id")
             @PathVariable("id") Long id
@@ -90,7 +100,7 @@ public class ThoughtRecordController {
             )
     })
     @GetMapping(value=PATH_HEADER, produces={"application/json"})
-    public ResponseEntity<?> getAllMealItems(
+    public ResponseEntity<?> getAllThoughtRecords(
             @AuthenticationPrincipal User user,
 
             @Parameter(description="search situation", schema=@Schema(type="string"))
@@ -129,15 +139,27 @@ public class ThoughtRecordController {
         );
     }
 
+    @ApiResponses(value={
+            @ApiResponse(
+                    responseCode="200",
+                    description="ThoughtRecordDTO",
+                    content={@Content(
+                            mediaType="application/json",
+                            schema=@Schema(implementation= ThoughtRecordDTO.class)
+                    )}
+            )
+    })
     @PutMapping(value=PATH_HEADER+"/{id}", consumes={"application/json"}, produces={"application/json"})
-    public ResponseEntity<?> updateAfterMealNote(
+    public ResponseEntity<?> updateThoughtRecord(
             @AuthenticationPrincipal User user,
             @Parameter(description="ThoughtRecord id")
             @PathVariable("id") Long id,
             @RequestBody ThoughtRecordUpdateDTO thoughtRecordUpdateDTO)
     {
-        thoughtRecordService.updateThoughtRecord(user, id, thoughtRecordUpdateDTO);
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        return new ResponseEntity<>(
+                thoughtRecordService.updateThoughtRecord(user, id, thoughtRecordUpdateDTO),
+                HttpStatus.OK
+        );
     }
 
     @Operation(
