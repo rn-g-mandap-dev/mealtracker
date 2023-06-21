@@ -35,7 +35,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
     }
 
     @Override
-    public Long createThoughtRecord(User user, ThoughtRecordCreationDTO thoughtRecordCreationDTO) {
+    public ThoughtRecordDTO createThoughtRecord(User user, ThoughtRecordCreationDTO thoughtRecordCreationDTO) {
         Set<ConstraintViolation<ThoughtRecordCreationDTO>> violations = validator.validate(thoughtRecordCreationDTO);
         if(!violations.isEmpty()) throw new ConstraintViolationException(violations);
 
@@ -54,14 +54,16 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
         List<Thought> thoughts = thoughtRecordCreationDTO.thoughts().stream()
                 .map(t -> new Thought(t.thought(), t.level()))
                 .toList();
-        return thoughtRecordRepository.save(new ThoughtRecord(
-                user.getId(),
-                thoughtRecordCreationDTO.date(),
-                thoughtRecordCreationDTO.time(),
-                thoughtRecordCreationDTO.situation(),
-                moods,
-                thoughts
-        )).getId();
+        return convertThoughtRecord2DTO(
+                thoughtRecordRepository.save(new ThoughtRecord(
+                        user.getId(),
+                        thoughtRecordCreationDTO.date(),
+                        thoughtRecordCreationDTO.time(),
+                        thoughtRecordCreationDTO.situation(),
+                        moods,
+                        thoughts
+                ))
+        );
     }
 
     @Override
@@ -104,7 +106,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
 
 
     @Override
-    public void updateThoughtRecord(User user, Long thoughtRecordId, ThoughtRecordUpdateDTO thoughtRecordDTO) {
+    public ThoughtRecordDTO updateThoughtRecord(User user, Long thoughtRecordId, ThoughtRecordUpdateDTO thoughtRecordDTO) {
         Set<ConstraintViolation<ThoughtRecordUpdateDTO>> violations = validator.validate(thoughtRecordDTO);
         if(!violations.isEmpty()) throw new ConstraintViolationException(violations);
 
@@ -117,7 +119,7 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
             moods.add(mu.mood());
         });
 
-        thoughtRecordRepository.findById(thoughtRecordId).ifPresentOrElse(
+        return thoughtRecordRepository.findById(thoughtRecordId).map(
                 tr -> {
                     if(Objects.equals(tr.getUserId(), user.getId())){
                         // prevent using mood, thought of other thoughtrecords
@@ -154,15 +156,13 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
                         tr.setThoughts(thoughtRecordDTO.thoughts().stream()
                                 .map(t -> new Thought(t.id(), t.thought(), t.level()))
                                 .collect(Collectors.toList()));
-                        thoughtRecordRepository.save(tr);
-                        return;
+                        return convertThoughtRecord2DTO(thoughtRecordRepository.save(tr));
                     }
                     throw new NotResourceOwnerException("does not own this resource");
-                },
-                () -> {
-                    throw new ResourceNotFoundException("thoughtrecord id not found: " + thoughtRecordId);
                 }
-        );
+        ).orElseThrow(() -> {
+            throw new ResourceNotFoundException("thoughtrecord id not found: " + thoughtRecordId);
+        });
     }
 
     private ThoughtRecordDTO convertThoughtRecord2DTO(ThoughtRecord tr){

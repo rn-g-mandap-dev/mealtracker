@@ -10,7 +10,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 public interface ThoughtRecordService {
-    Long createThoughtRecord(User user, ThoughtRecordCreationDTO thoughtRecordCreationDTO);
+    ThoughtRecordDTO createThoughtRecord(User user, ThoughtRecordCreationDTO thoughtRecordCreationDTO);
     ThoughtRecordDTO getThoughtRecord(User user, Long thoughtRecordId);
     List<ThoughtRecordDTO> getThoughtRecords(
             User user,
@@ -22,6 +22,6 @@ public interface ThoughtRecordService {
             LocalTime startTime,
             LocalTime endTime
     );
-    void updateThoughtRecord(User user, Long thoughtRecordId, ThoughtRecordUpdateDTO thoughtRecordDTO);
+    ThoughtRecordDTO updateThoughtRecord(User user, Long thoughtRecordId, ThoughtRecordUpdateDTO thoughtRecordDTO);
     void deleteThoughtRecord(User user, Long id);
 }
