@@ -5,6 +5,7 @@ import com.example.meal2.aftermealnote.dto.AfterMealNoteCreationDTO;
 import com.example.meal2.aftermealnote.dto.AfterMealNoteDetailedDTO;
 import com.example.meal2.aftermealnote.dto.AfterMealNoteUpdateDTO;
 import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.mealitem.MealItem;
 import com.example.meal2.mealitem.MealItemRepository;
@@ -21,9 +22,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,8 +50,12 @@ class AfterMealNoteServiceImplTest {
 
     private MealItem mealItem;
 
+    private Integer maxMealItemAfterMealNotes = 7;
+
     @BeforeEach
     public void setUp(){
+        ReflectionTestUtils.setField(afterMealNoteService, "maxMealItemAfterMealNotes", maxMealItemAfterMealNotes);
+
         user = new User();
         user.setId(9999);
         user.setUsername("test_user");
@@ -121,6 +129,38 @@ class AfterMealNoteServiceImplTest {
                 ResourceNotFoundException.class,
                 () -> afterMealNoteService.createAfterMealNote(user, amncDTO)
         );
+        verify(afterMealNoteRepository, never()).save(any(AfterMealNote.class));
+    }
+    @DisplayName("createAfterMealNote: max aftermealnotes")
+    @Test
+    void createAfterMealNote3(){
+        AfterMealNoteCreationDTO amncDTO = new AfterMealNoteCreationDTO(
+                9999L,
+                LocalDate.parse("2023-06-20"),
+                LocalTime.parse("19:53:00"),
+                "test note"
+        );
+        mealItem.setAfterMealNotes(new HashSet<>());
+        for(int i=0;i<maxMealItemAfterMealNotes;i++){
+            AfterMealNote amn = new AfterMealNote();
+            amn.setId(10L + i);
+            amn.setMealItemId(9999L);
+            amn.setTime(LocalTime.parse("19:53:00"));
+            amn.setDate(LocalDate.parse("2023-06-20"));
+            amn.setNote("test note");
+            mealItem.getAfterMealNotes().add(amn);
+        }
+
+        AfterMealNote amn = new AfterMealNote();
+        amn.setId(1L);
+
+        when(mealItemService.getMealItemById(any())).thenReturn(Optional.of(mealItem));
+
+        Assertions.assertThrows(
+                ResourceLimitException.class,
+                () -> afterMealNoteService.createAfterMealNote(user, amncDTO)
+        );
+
         verify(afterMealNoteRepository, never()).save(any(AfterMealNote.class));
     }
 

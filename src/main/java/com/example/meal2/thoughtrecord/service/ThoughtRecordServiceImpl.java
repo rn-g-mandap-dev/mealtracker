@@ -1,6 +1,7 @@
 package com.example.meal2.thoughtrecord.service;
 
 import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.thoughtrecord.dto.*;
 import com.example.meal2.thoughtrecord.entity.Mood;
@@ -13,6 +14,7 @@ import com.example.meal2.util.conversion.ConversionMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,10 +40,30 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
         this.conversionMapper = conversionMapper;
     }
 
+    @Value("${limits.thoughtrecordsperuser}")
+    private int maxThoughtRecordsPerUser;
+
+    @Value("${limits.moodsperthoughtrecord}")
+    private int maxMoodsPerThoughtRecord;
+
+    @Value("${limits.thoughtsperthoughtrecord}")
+    private int maxThoughtsPerThoughtRecord;
+
     @Override
     public ThoughtRecordDTO createThoughtRecord(User user, ThoughtRecordCreationDTO thoughtRecordCreationDTO) {
         Set<ConstraintViolation<ThoughtRecordCreationDTO>> violations = validator.validate(thoughtRecordCreationDTO);
         if(!violations.isEmpty()) throw new ConstraintViolationException(violations);
+
+        Long records = thoughtRecordRepository.countByUserId(user.getId());
+        if(records >= maxThoughtRecordsPerUser){
+            throw new ResourceLimitException(String.format("max %d thoughtrecords reached", maxThoughtRecordsPerUser));
+        }
+        if(thoughtRecordCreationDTO.moods().size() > maxMoodsPerThoughtRecord){
+            throw new ResourceLimitException(String.format("max %d moods per thoughtrecord reached", maxMoodsPerThoughtRecord));
+        }
+        if(thoughtRecordCreationDTO.thoughts().size() > maxThoughtsPerThoughtRecord){
+            throw new ResourceLimitException(String.format("max %d thoughts per thoughtrecord reached", maxThoughtsPerThoughtRecord));
+        }
 
         // check if uses same mood multiple times
         List<MoodType> moodTypes = new ArrayList<MoodType>();
@@ -113,6 +135,13 @@ public class ThoughtRecordServiceImpl implements ThoughtRecordService {
     public ThoughtRecordDTO updateThoughtRecord(User user, Long thoughtRecordId, ThoughtRecordUpdateDTO thoughtRecordDTO) {
         Set<ConstraintViolation<ThoughtRecordUpdateDTO>> violations = validator.validate(thoughtRecordDTO);
         if(!violations.isEmpty()) throw new ConstraintViolationException(violations);
+
+        if(thoughtRecordDTO.moods().size() > maxMoodsPerThoughtRecord){
+            throw new ResourceLimitException(String.format("max %d moods per thoughtrecord reached", maxMoodsPerThoughtRecord));
+        }
+        if(thoughtRecordDTO.thoughts().size() > maxThoughtsPerThoughtRecord){
+            throw new ResourceLimitException(String.format("max %d thoughts per thoughtrecord reached", maxThoughtsPerThoughtRecord));
+        }
 
         // check if uses same mood multiple times
         List<MoodType> moods = new ArrayList<MoodType>();

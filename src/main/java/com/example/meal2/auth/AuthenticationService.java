@@ -36,7 +36,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    @Value("${users.accountlimit}")
+    @Value("${limits.users}")
     private Integer maxUsers;
 
     public void register(@Valid UserCreationDTO userCreationDTO) {

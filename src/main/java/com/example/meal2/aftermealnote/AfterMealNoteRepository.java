@@ -45,4 +45,15 @@ public interface AfterMealNoteRepository extends JpaRepository<AfterMealNote, Lo
             Pageable pageable
     );
 
+    @Query(value=
+            """
+                SELECT COUNT(*)
+                FROM after_meal_note AS amn
+                WHERE
+                    (:mid = amn.meal_item_id)
+            """, nativeQuery=true)
+    Integer countMealItemAfterMealNotes(
+            @Param("mid") Long mealItemId
+    );
+
 }

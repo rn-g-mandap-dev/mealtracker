@@ -2,6 +2,7 @@ package com.example.meal2.mealitem;
 
 import com.example.meal2.aftermealnote.dto.AfterMealNoteInfoDTO;
 import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.mealitem.dto.MealItemCreationDTO;
 import com.example.meal2.mealitem.dto.MealItemDetailedDTO;
@@ -9,6 +10,7 @@ import com.example.meal2.mealitem.dto.MealItemUpdateDTO;
 import com.example.meal2.user.User;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,6 +35,9 @@ public class MealItemServiceImpl implements MealItemService{
     public void setMealItemRepository(MealItemRepository mealItemRepository){
         this.mealItemRepository = mealItemRepository;
     }
+
+    @Value("${limits.mealitemsperuser}")
+    private Integer maxMealItems;
 
     // todo research if refactor into builder pattern needed
     @Override
@@ -73,6 +78,10 @@ public class MealItemServiceImpl implements MealItemService{
 
     @Override
     public Long createMealItem(User user, @Valid MealItemCreationDTO mealItemCreationDTO) {
+        int userMealItems = mealItemRepository.countUserMealItems(user.getId());
+        if(userMealItems >= maxMealItems){
+            throw new ResourceLimitException(String.format("max %d mealitems reached", maxMealItems));
+        }
 
         MealItem mi = new MealItem();
         mi.setUserId(user.getId());
@@ -164,5 +173,6 @@ public class MealItemServiceImpl implements MealItemService{
     public boolean existsById(Long id) {
         return mealItemRepository.existsById(id);
     }
+
 
 }

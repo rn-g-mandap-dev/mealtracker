@@ -27,12 +27,12 @@ public record ThoughtRecordUpdateDTO(
 
         @NotNull(message="moods => must not be empty (ThoughtRecordCreationDTO)")
         @NotEmpty(message="moods => must not be empty (ThoughtRecordCreationDTO)")
-        @Size(min=1, max=12, message="moods => must have 1 to 12 items (ThoughtRecordCreationDTO)")
+        @Size(min=1, max=6, message="moods => must have 1 to 6 items (ThoughtRecordCreationDTO)")
         List<@Valid MoodUpdateDTO> moods,
 
         @NotNull(message="thoughts => must not be empty (ThoughtRecordCreationDTO)")
         @NotEmpty(message="thoughts => must not be empty (ThoughtRecordCreationDTO)")
-        @Size(min=1, max=24, message="thoughts => must have 1 to 24 items (ThoughtRecordCreationDTO)")
+        @Size(min=1, max=12, message="thoughts => must have 1 to 12 items (ThoughtRecordCreationDTO)")
         List<@Valid ThoughtUpdateDTO> thoughts
 ) {
 }

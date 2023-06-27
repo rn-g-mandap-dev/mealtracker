@@ -1,6 +1,7 @@
 package com.example.meal2.thoughtrecord.service;
 
 import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.thoughtrecord.dto.*;
 import com.example.meal2.thoughtrecord.entity.Mood;
@@ -25,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -62,8 +64,15 @@ class ThoughtRecordServiceImplTest {
     private ThoughtRecordDTO thoughtRecordDTO;
     private ThoughtRecordDTO thoughtRecordDTO2;
 
+    private int maxThoughtRecordsPerUser=1500;
+    private int maxMoodsPerThoughtRecord=6;
+    private int maxThoughtsPerThoughtRecord=12;
+
     @BeforeEach
     public void setUp(){
+        ReflectionTestUtils.setField(thoughtRecordService, "maxThoughtRecordsPerUser", maxThoughtRecordsPerUser);
+        ReflectionTestUtils.setField(thoughtRecordService, "maxMoodsPerThoughtRecord", maxMoodsPerThoughtRecord);
+        ReflectionTestUtils.setField(thoughtRecordService, "maxThoughtsPerThoughtRecord", maxThoughtsPerThoughtRecord);
 
         user = new User();
         user.setId(9999);
@@ -169,6 +178,72 @@ class ThoughtRecordServiceImplTest {
 
         Assertions.assertThrows(
                 IllegalArgumentException.class,
+                () -> thoughtRecordService.createThoughtRecord(user, thoughtRecordCreationDTO)
+        );
+        verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
+    }
+    @DisplayName("createThoughtRecord: max thoughtrecords")
+    @Test
+    void createThoughtRecord3(){
+        when(thoughtRecordRepository.countByUserId(anyInt())).thenReturn(maxThoughtRecordsPerUser*1L);
+        Assertions.assertThrows(
+                ResourceLimitException.class,
+                () -> thoughtRecordService.createThoughtRecord(user, thoughtRecordCreationDTO)
+        );
+        verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
+    }
+    @DisplayName("createThoughtRecord: max moods per thoughtrecord")
+    @Test
+    void createThoughtRecord4(){
+        thoughtRecordCreationDTO = new ThoughtRecordCreationDTO(
+                LocalDate.parse("2023-06-09"),
+                LocalTime.parse("14:35:00"),
+                "example situation",
+                List.of(
+                        new MoodCreationDTO(MoodType.EAGER, 99),
+                        new MoodCreationDTO(MoodType.EAGER, 99),
+                        new MoodCreationDTO(MoodType.EAGER, 99),
+                        new MoodCreationDTO(MoodType.EAGER, 99),
+                        new MoodCreationDTO(MoodType.EAGER, 99),
+                        new MoodCreationDTO(MoodType.EAGER, 99),
+                        new MoodCreationDTO(MoodType.EAGER, 99)
+                ),
+                List.of(new ThoughtCreationDTO("thought example", 99))
+        );
+
+        Assertions.assertThrows(
+                ResourceLimitException.class,
+                () -> thoughtRecordService.createThoughtRecord(user, thoughtRecordCreationDTO)
+        );
+        verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
+    }
+    @DisplayName("createThoughtRecord: max thoughts per thoughtrecord")
+    @Test
+    void createThoughtRecord5(){
+        thoughtRecordCreationDTO = new ThoughtRecordCreationDTO(
+                LocalDate.parse("2023-06-09"),
+                LocalTime.parse("14:35:00"),
+                "example situation",
+                List.of(new MoodCreationDTO(MoodType.EAGER, 99)),
+                List.of(
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99),
+                        new ThoughtCreationDTO("thought example", 99)
+                )
+        );
+
+        Assertions.assertThrows(
+                ResourceLimitException.class,
                 () -> thoughtRecordService.createThoughtRecord(user, thoughtRecordCreationDTO)
         );
         verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
@@ -346,6 +421,62 @@ class ThoughtRecordServiceImplTest {
                 () -> thoughtRecordService.updateThoughtRecord(user, 1L, thoughtRecordUpdateDTO)
         );
 
+        verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
+    }
+    @DisplayName("updateThoughtRecord: max moods per thoughtrecord")
+    @Test
+    void updateThoughtRecord6(){
+        thoughtRecordUpdateDTO = new ThoughtRecordUpdateDTO(
+                LocalDate.parse("2023-06-09"),
+                LocalTime.parse("14:35:00"),
+                "example situation",
+                List.of(
+                        new MoodUpdateDTO(1L, MoodType.EAGER, 99),
+                        new MoodUpdateDTO(2L, MoodType.EAGER, 99),
+                        new MoodUpdateDTO(3L, MoodType.EAGER, 99),
+                        new MoodUpdateDTO(4L, MoodType.EAGER, 99),
+                        new MoodUpdateDTO(5L, MoodType.EAGER, 99),
+                        new MoodUpdateDTO(6L, MoodType.EAGER, 99),
+                        new MoodUpdateDTO(7L, MoodType.EAGER, 99)
+                ),
+                List.of(new ThoughtUpdateDTO(1L, "thought example", 99))
+        );
+
+        Assertions.assertThrows(
+                ResourceLimitException.class,
+                () -> thoughtRecordService.updateThoughtRecord(user, 1L, thoughtRecordUpdateDTO)
+        );
+        verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
+    }
+    @DisplayName("updateThoughtRecord: max thoughts per thoughtrecord")
+    @Test
+    void updateThoughtRecord7(){
+        thoughtRecordUpdateDTO = new ThoughtRecordUpdateDTO(
+                LocalDate.parse("2023-06-09"),
+                LocalTime.parse("14:35:00"),
+                "example situation",
+                List.of(new MoodUpdateDTO(1L, MoodType.EAGER, 99)),
+                List.of(
+                        new ThoughtUpdateDTO(1L, "thought example", 99),
+                        new ThoughtUpdateDTO(2L, "thought example", 99),
+                        new ThoughtUpdateDTO(3L, "thought example", 99),
+                        new ThoughtUpdateDTO(4L, "thought example", 99),
+                        new ThoughtUpdateDTO(5L, "thought example", 99),
+                        new ThoughtUpdateDTO(6L, "thought example", 99),
+                        new ThoughtUpdateDTO(7L, "thought example", 99),
+                        new ThoughtUpdateDTO(8L, "thought example", 99),
+                        new ThoughtUpdateDTO(9L, "thought example", 99),
+                        new ThoughtUpdateDTO(10L, "thought example", 99),
+                        new ThoughtUpdateDTO(11L, "thought example", 99),
+                        new ThoughtUpdateDTO(12L, "thought example", 99),
+                        new ThoughtUpdateDTO(13L, "thought example", 99)
+                )
+        );
+
+        Assertions.assertThrows(
+                ResourceLimitException.class,
+                () -> thoughtRecordService.updateThoughtRecord(user, 1L, thoughtRecordUpdateDTO)
+        );
         verify(thoughtRecordRepository, never()).save(any(ThoughtRecord.class));
     }
 

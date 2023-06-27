@@ -36,4 +36,16 @@ public interface MealItemRepository extends JpaRepository<MealItem, Long> {
             Pageable pageable
     );
 
+    // not yet tested, should to test all queries in all repositories in the future for detailed testing...
+    @Query(value=
+        """
+            SELECT COUNT(*)
+            FROM meal_item AS mi
+            WHERE
+                (:uid = mi.user_id)
+        """, nativeQuery=true)
+    Integer countUserMealItems(
+            @Param("uid") Integer userId
+    );
+
 }

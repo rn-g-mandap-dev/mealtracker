@@ -16,6 +16,8 @@ import java.util.List;
 @Repository
 public interface ThoughtRecordRepository extends JpaRepository<ThoughtRecord, Long> {
 
+    long countByUserId(Integer userId);
+
     @Query(value=
             """
                 SELECT trv0.*

@@ -1,6 +1,7 @@
 package com.example.meal2.mealitem;
 
 import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.mealitem.dto.MealItemCreationDTO;
 import com.example.meal2.user.Role;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -36,8 +38,12 @@ class MealItemServiceImplTest {
 
     private MealItem mealItem;
 
+    private Integer maxMealItems = 1000;
+
     @BeforeEach
     public void setup(){
+        ReflectionTestUtils.setField(mealItemService, "maxMealItems", maxMealItems);
+
         user = new User();
         user.setId(9999);
         user.setUsername("test_user");
@@ -82,6 +88,26 @@ class MealItemServiceImplTest {
         //verify(mealItemRepository, times(1)).save(mealItem);
         verify(mealItemRepository, times(1)).save(any(MealItem.class));
         assertEquals(mealItem.getId(), returnId);
+    }
+
+    @DisplayName("createMealItem: max MealItems")
+    @Test
+    void maxMealItems_createMealItem(){
+        MealItemCreationDTO micDTO = new MealItemCreationDTO(
+                "standard meal",
+                LocalDate.parse("2023-06-09"),
+                LocalTime.parse("14:35:00"),
+                MealItem.MealSize.heavy,
+                "test note"
+        );
+
+        when(mealItemRepository.countUserMealItems(anyInt())).thenReturn(maxMealItems);
+
+        Assertions.assertThrows(
+                ResourceLimitException.class,
+                () -> mealItemService.createMealItem(user, micDTO)
+        );
+        verify(mealItemRepository, never()).save(any());
     }
 
     @Test

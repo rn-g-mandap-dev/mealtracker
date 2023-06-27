@@ -4,12 +4,14 @@ import com.example.meal2.aftermealnote.dto.AfterMealNoteCreationDTO;
 import com.example.meal2.aftermealnote.dto.AfterMealNoteDetailedDTO;
 import com.example.meal2.aftermealnote.dto.AfterMealNoteUpdateDTO;
 import com.example.meal2.exception.NotResourceOwnerException;
+import com.example.meal2.exception.ResourceLimitException;
 import com.example.meal2.exception.ResourceNotFoundException;
 import com.example.meal2.mealitem.MealItem;
 import com.example.meal2.mealitem.MealItemServiceImpl;
 import com.example.meal2.mealitem.dto.MealItemInfoDTO;
 import com.example.meal2.user.User;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,12 +35,19 @@ public class AfterMealNoteServiceImpl implements AfterMealNoteService {
         this.mealItemService = mealItemService;
     }
 
+    @Value("${limits.aftermealnotespermeal}")
+    private Integer maxMealItemAfterMealNotes;
+
     @Override
     public Long createAfterMealNote(User user, @Valid AfterMealNoteCreationDTO afterMealNoteCreationDTO) {
         long id = afterMealNoteCreationDTO.mealItemId();
         Optional<MealItem> mi = mealItemService.getMealItemById(id);
         if(mi.isPresent()){
             if(Objects.equals(mi.get().getUserId(), user.getId())){
+                if(mi.get().getAfterMealNotes() != null && mi.get().getAfterMealNotes().size() >= maxMealItemAfterMealNotes){
+                    throw new ResourceLimitException(String.format("max %d mealitem aftermealnotes reached", maxMealItemAfterMealNotes));
+                }
+
                 var amn = new AfterMealNote();
                 amn.setMealItemId(afterMealNoteCreationDTO.mealItemId());
                 amn.setDate(afterMealNoteCreationDTO.date());

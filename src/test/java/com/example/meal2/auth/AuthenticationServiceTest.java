@@ -50,7 +50,7 @@ class AuthenticationServiceTest {
     @BeforeEach
     public void setUp(){
         // from @Value application.properties since using SpringBootTest will make it an integration test
-        ReflectionTestUtils.setField(authenticationService, "maxUsers", 250);
+        ReflectionTestUtils.setField(authenticationService, "maxUsers", 150);
     }
 
     @DisplayName("register: normal")

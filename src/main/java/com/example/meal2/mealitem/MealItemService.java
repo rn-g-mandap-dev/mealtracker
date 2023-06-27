@@ -31,4 +31,5 @@ public interface MealItemService {
     MealItemDetailedDTO getMealItem(User user, Long id);
     void deleteMealItemById(User user, Long id);
     boolean existsById(Long id);
+
 }

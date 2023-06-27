@@ -132,7 +132,7 @@ public class MealItemController {
     @PostMapping(value="/meals", consumes={"application/json"}, produces={"application/json"})
     public ResponseEntity<?> addMealItem(
             @AuthenticationPrincipal User user,
-            @RequestBody MealItemCreationDTO mealItemCreationDTO
+            @RequestBody @Valid MealItemCreationDTO mealItemCreationDTO
     ){
         return new ResponseEntity<>(
                 new MealItemCreationResponseDTO(
