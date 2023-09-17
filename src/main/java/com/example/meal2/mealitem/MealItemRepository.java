@@ -24,6 +24,7 @@ public interface MealItemRepository extends JpaRepository<MealItem, Long> {
             (:sd <= mi.meal_date AND :ed >= mi.meal_date) AND 
             (:st <= mi.meal_time AND :et >= mi.meal_time) AND 
             (:uid = mi.user_id)
+        ORDER BY mi.meal_date asc, mi.meal_time asc
     """, nativeQuery=true)
     List<MealItem> getAllMealItems(
             @Param("uid") Integer userId,

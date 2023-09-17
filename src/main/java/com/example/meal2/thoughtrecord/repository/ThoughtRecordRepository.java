@@ -27,6 +27,7 @@ public interface ThoughtRecordRepository extends JpaRepository<ThoughtRecord, Lo
                     (:sd <= trv0.tr_date AND :ed >= trv0.tr_date) AND 
                     (:st <= trv0.tr_time AND :et >= trv0.tr_time) AND 
                     (:uid = trv0.user_id)
+                ORDER BY trv0.tr_date asc, trv0.tr_time asc
             """, nativeQuery=true)
     List<ThoughtRecord> getAllThoughtRecords(
             @Param("uid") Integer userId,

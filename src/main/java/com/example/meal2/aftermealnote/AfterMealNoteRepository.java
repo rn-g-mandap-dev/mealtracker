@@ -34,6 +34,7 @@ public interface AfterMealNoteRepository extends JpaRepository<AfterMealNote, Lo
             (:sd <= amn.note_date AND :ed >= amn.note_date) AND 
             (:st <= amn.note_time AND :et >= amn.note_time) AND 
             (:uid = mi.user_id)
+        ORDER BY amn.note_date asc, amn.note_time asc
     """, nativeQuery=true)
     List<AfterMealNote> getAllAfterMealNotes(
             @Param("uid") Integer userId,
