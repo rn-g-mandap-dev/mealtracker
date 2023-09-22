@@ -12,9 +12,7 @@ import com.example.meal2.mealitem.dto.MealItemInfoDTO;
 import com.example.meal2.user.User;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -104,6 +102,40 @@ public class AfterMealNoteServiceImpl implements AfterMealNoteService {
                 .stream()
                 .map(this::convertAfterMealNote2DetaieldDTO)
                 .toList();
+    }
+    @Override
+    public Page<AfterMealNoteDetailedDTO> getAfterMealNotesPage(
+            User user,
+            String search,
+            Integer page,
+            Integer size,
+            LocalDate startDate,
+            LocalDate endDate,
+            LocalTime startTime,
+            LocalTime endTime
+    ) {
+        int DEFAULT_SIZE = 32;
+        int MAX_SIZE = 50;
+        LocalDate DEFAULT_START_DATE = LocalDate.parse("0000-01-01");
+        LocalDate DEFAULT_END_DATE = LocalDate.parse("9998-12-31");
+        LocalTime DEFAULT_START_TIME = LocalTime.parse("00:00:00");
+        LocalTime DEFAULT_END_TIME = LocalTime.parse("23:59:59");
+        if (size <= 0) size = DEFAULT_SIZE;
+        if (size > MAX_SIZE) size = MAX_SIZE;
+        if (startDate == null) startDate = DEFAULT_START_DATE;
+        if (endDate == null) endDate = DEFAULT_END_DATE;
+        if (startTime == null) startTime = DEFAULT_START_TIME;
+        if (endTime == null) endTime = DEFAULT_END_TIME;
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("note_date").descending().and(Sort.by("note_time").descending()));
+
+        Long count = afterMealNoteRepository.getAllAfterMealNotesCount(user.getId(), search, startDate, endDate, startTime, endTime);
+        return new PageImpl<>(afterMealNoteRepository.getAllAfterMealNotes(user.getId(), search, startDate, endDate, startTime, endTime, pageable)
+                .stream()
+                .map(this::convertAfterMealNote2DetaieldDTO)
+                .toList(), pageable, count);
     }
 
     private AfterMealNoteDetailedDTO convertAfterMealNote2DetaieldDTO(AfterMealNote amn){

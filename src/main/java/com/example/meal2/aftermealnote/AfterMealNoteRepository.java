@@ -45,6 +45,27 @@ public interface AfterMealNoteRepository extends JpaRepository<AfterMealNote, Lo
             @Param("et") LocalTime endTime,
             Pageable pageable
     );
+    @Query(value=
+            """
+                SELECT COUNT(1)
+                FROM after_meal_note AS amn
+                JOIN meal_item AS mi
+                ON amn.meal_item_id = mi.id
+                WHERE
+                    (amn.note LIKE CONCAT('%', :s, '%')) AND
+                    (:sd <= amn.note_date AND :ed >= amn.note_date) AND 
+                    (:st <= amn.note_time AND :et >= amn.note_time) AND 
+                    (:uid = mi.user_id)
+                ORDER BY amn.note_date asc, amn.note_time asc
+            """, nativeQuery=true)
+    Long getAllAfterMealNotesCount(
+            @Param("uid") Integer userId,
+            @Param("s") String search,
+            @Param("sd") LocalDate startDate,
+            @Param("ed") LocalDate endDate,
+            @Param("st") LocalTime startTime,
+            @Param("et") LocalTime endTime
+    );
 
     @Query(value=
             """

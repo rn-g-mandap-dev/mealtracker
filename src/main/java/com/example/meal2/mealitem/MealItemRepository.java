@@ -37,6 +37,28 @@ public interface MealItemRepository extends JpaRepository<MealItem, Long> {
             Pageable pageable
     );
 
+    @Query(value=
+            """
+                SELECT COUNT(1)
+                FROM meal_item AS mi
+                WHERE
+                    (mi.meal LIKE CONCAT('%', :s, '%') OR mi.note LIKE CONCAT('%', :s, '%')) AND
+                    (:#{#ms?.name()} IS NULL OR :#{#ms?.name()} = mi.meal_size) AND
+                    (:sd <= mi.meal_date AND :ed >= mi.meal_date) AND 
+                    (:st <= mi.meal_time AND :et >= mi.meal_time) AND 
+                    (:uid = mi.user_id)
+                ORDER BY mi.meal_date asc, mi.meal_time asc
+            """, nativeQuery=true)
+    Long getAllMealItemsCount(
+            @Param("uid") Integer userId,
+            @Param("s") String search,
+            @Param("ms") MealItem.MealSize mealSize,
+            @Param("sd") LocalDate startDate,
+            @Param("ed") LocalDate endDate,
+            @Param("st") LocalTime startTime,
+            @Param("et") LocalTime endTime
+    );
+
     // not yet tested, should to test all queries in all repositories in the future for detailed testing...
     @Query(value=
         """

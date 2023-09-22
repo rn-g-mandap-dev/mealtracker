@@ -5,6 +5,7 @@ import com.example.meal2.mealitem.dto.MealItemCreationDTO;
 import com.example.meal2.mealitem.dto.MealItemDetailedDTO;
 import com.example.meal2.mealitem.dto.MealItemUpdateDTO;
 import com.example.meal2.user.User;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
@@ -15,6 +16,16 @@ import java.util.Optional;
 
 public interface MealItemService {
     List<MealItemDetailedDTO> getAllMealItems(
+            User user,
+            String search,
+            Integer page,
+            Integer size,
+            MealItem.MealSize mealSize,
+            LocalDate startDate,
+            LocalDate endDate,
+            LocalTime startTime,
+            LocalTime endTime);
+    Page<MealItemDetailedDTO> getAllMealItemsPage(
             User user,
             String search,
             Integer page,

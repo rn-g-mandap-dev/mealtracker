@@ -38,5 +38,24 @@ public interface ThoughtRecordRepository extends JpaRepository<ThoughtRecord, Lo
             @Param("et") LocalTime endTime,
             Pageable pageable
     );
+    @Query(value=
+            """
+                SELECT COUNT(1)
+                FROM thought_record_v0 AS trv0
+                WHERE
+                    (trv0.situation_desc LIKE CONCAT('%', :s, '%')) AND
+                    (:sd <= trv0.tr_date AND :ed >= trv0.tr_date) AND 
+                    (:st <= trv0.tr_time AND :et >= trv0.tr_time) AND 
+                    (:uid = trv0.user_id)
+                ORDER BY trv0.tr_date asc, trv0.tr_time asc
+            """, nativeQuery=true)
+    Long getAllThoughtRecordsCount(
+            @Param("uid") Integer userId,
+            @Param("s") String search,
+            @Param("sd") LocalDate startDate,
+            @Param("ed") LocalDate endDate,
+            @Param("st") LocalTime startTime,
+            @Param("et") LocalTime endTime
+    );
 
 }
